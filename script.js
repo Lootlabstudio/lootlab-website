@@ -266,7 +266,6 @@ if (orbitCanvas && logoContainer) {
 
     let canvasMouseX = CX;
     let canvasMouseY = CY;
-    let pulseWaves = [];
 
     // Track mouse relative to canvas
     logoContainer.addEventListener('mousemove', (e) => {
@@ -364,32 +363,6 @@ if (orbitCanvas && logoContainer) {
         }
     }
 
-    // Pulse wave on click
-    class PulseWave {
-        constructor() {
-            this.radius = 0;
-            this.maxRadius = 240;
-            this.alpha = 0.8;
-            this.speed = 5;
-        }
-        update() {
-            this.radius += this.speed;
-            this.alpha = Math.max(0, 0.8 * (1 - this.radius / this.maxRadius));
-        }
-        isDead() { return this.radius >= this.maxRadius; }
-        draw(ctx) {
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(CX, CY, this.radius, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(0, 217, 255, ${this.alpha})`;
-            ctx.lineWidth = 2;
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = 'rgba(0, 217, 255, 0.6)';
-            ctx.stroke();
-            ctx.restore();
-        }
-    }
-
     // Build nodes across 3 orbits
     const nodes = [];
     const cyan = '#00d9ff';
@@ -473,26 +446,10 @@ if (orbitCanvas && logoContainer) {
         drawConnections(ctx2);
         nodes.forEach(n => n.draw(ctx2, frameT));
 
-        // Pulse waves
-        for (let i = pulseWaves.length - 1; i >= 0; i--) {
-            pulseWaves[i].update();
-            pulseWaves[i].draw(ctx2);
-            if (pulseWaves[i].isDead()) pulseWaves.splice(i, 1);
-        }
-
         requestAnimationFrame(renderOrbit);
     }
 
     renderOrbit();
-
-    // Trigger pulse on logo click
-    if (interactiveLogo) {
-        interactiveLogo.addEventListener('click', () => {
-            pulseWaves.push(new PulseWave());
-            pulseWaves.push(new PulseWave());
-            pulseWaves[pulseWaves.length - 1].speed = 3;
-        });
-    }
 }
 
 // ---- 3D tilt on mouse move ----
