@@ -653,16 +653,11 @@ document.querySelectorAll('.game-card, .philosophy-card, .about-card, .news-card
 
 document.querySelectorAll('.btn-primary, .btn-secondary').forEach((button) => {
     button.addEventListener('click', function (e) {
-        // For the "Discover Our Games" button, create pixel break effect
+        // For the "Discover Our Games" button, scroll to games section
         if (this.getAttribute('data-section') === 'games') {
             const rect = this.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
-            
-            // Create massive pixel burst from button
-            for (let i = 0; i < 80; i++) {
-                createGamePixels(centerX, centerY, 1);
-            }
             
             // Brief visual feedback - fade out and back in
             const originalOpacity = this.style.opacity;
@@ -670,19 +665,10 @@ document.querySelectorAll('.btn-primary, .btn-secondary').forEach((button) => {
             setTimeout(() => {
                 this.style.opacity = originalOpacity;
             }, 100);
-        } else {
-            // For other buttons, just create regular particles
-            createParticles(e.clientX, e.clientY, 15);
         }
     });
 
-    // Add hover particle effect
-    button.addEventListener('mouseenter', function (e) {
-        const rect = this.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        createParticles(centerX, centerY, 3);
-    });
+    // Button hover interactions removed for cleaner interaction
 });
 
 // ========== CONTACT FORM HANDLING ==========
