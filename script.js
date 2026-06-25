@@ -249,75 +249,290 @@ function drawCometTrail() {
     // Draw bright comet head - REMOVED for cleaner effect
 }
 
-// ========== INTERACTIVE LOGO ==========
+// ========== INTERACTIVE LOGO + ORBIT CANVAS ==========
 
 const interactiveLogo = document.getElementById('interactiveLogo');
 const logoContainer = document.querySelector('.hero-logo-container');
+const orbitCanvas = document.getElementById('logoOrbit');
 
+// ---- Canvas orbit system ----
+if (orbitCanvas && logoContainer) {
+    const ctx2 = orbitCanvas.getContext('2d');
+    const SIZE = 700;
+    orbitCanvas.width = SIZE;
+    orbitCanvas.height = SIZE;
+    const CX = SIZE / 2;
+    const CY = SIZE / 2;
+
+    let canvasMouseX = CX;
+    let canvasMouseY = CY;
+    let pulseWaves = [];
+
+    // Track mouse relative to canvas
+    logoContainer.addEventListener('mousemove', (e) => {
+        const rect = orbitCanvas.getBoundingClientRect();
+        const scaleX = SIZE / rect.width;
+        const scaleY = SIZE / rect.height;
+        canvasMouseX = (e.clientX - rect.left) * scaleX;
+        canvasMouseY = (e.clientY - rect.top) * scaleY;
+    });
+    logoContainer.addEventListener('mouseleave', () => {
+        canvasMouseX = CX;
+        canvasMouseY = CY;
+    });
+
+    // Node class
+    class OrbitNode {
+        constructor(orbitRadius, angle, speed, size, color, shape) {
+            this.orbitRadius = orbitRadius;
+            this.baseRadius = orbitRadius;
+            this.angle = angle;
+            this.speed = speed;
+            this.size = size;
+            this.color = color;
+            this.shape = shape; // 'diamond' | 'square' | 'tri'
+            this.x = CX;
+            this.y = CY;
+            this.pulseOffset = Math.random() * Math.PI * 2;
+            this.repelX = 0;
+            this.repelY = 0;
+        }
+
+        update(t) {
+            this.angle += this.speed;
+
+            // Base position
+            const bx = CX + Math.cos(this.angle) * this.orbitRadius;
+            const by = CY + Math.sin(this.angle) * this.orbitRadius;
+
+            // Mouse repulsion
+            const dx = bx - canvasMouseX;
+            const dy = by - canvasMouseY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const repelRadius = 90;
+
+            if (dist < repelRadius) {
+                const force = (repelRadius - dist) / repelRadius;
+                this.repelX += (dx / dist) * force * 4;
+                this.repelY += (dy / dist) * force * 4;
+            }
+
+            this.repelX *= 0.85;
+            this.repelY *= 0.85;
+
+            this.x = bx + this.repelX;
+            this.y = by + this.repelY;
+        }
+
+        draw(ctx, t) {
+            const pulse = 0.65 + Math.sin(t * 0.04 + this.pulseOffset) * 0.35;
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle * 2);
+            ctx.globalAlpha = 0.5 + pulse * 0.5;
+            ctx.shadowBlur = 12 * pulse;
+            ctx.shadowColor = this.color;
+            ctx.fillStyle = this.color;
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 1;
+
+            if (this.shape === 'diamond') {
+                ctx.beginPath();
+                ctx.moveTo(0, -this.size);
+                ctx.lineTo(this.size * 0.6, 0);
+                ctx.lineTo(0, this.size);
+                ctx.lineTo(-this.size * 0.6, 0);
+                ctx.closePath();
+                ctx.fill();
+            } else if (this.shape === 'square') {
+                const h = this.size * 0.7;
+                ctx.fillRect(-h, -h, h * 2, h * 2);
+            } else if (this.shape === 'tri') {
+                ctx.beginPath();
+                ctx.moveTo(0, -this.size);
+                ctx.lineTo(this.size * 0.87, this.size * 0.5);
+                ctx.lineTo(-this.size * 0.87, this.size * 0.5);
+                ctx.closePath();
+                ctx.fill();
+            } else if (this.shape === 'cross') {
+                const s = this.size * 0.35;
+                const l = this.size;
+                ctx.fillRect(-s, -l, s * 2, l * 2);
+                ctx.fillRect(-l, -s, l * 2, s * 2);
+            }
+            ctx.restore();
+        }
+    }
+
+    // Pulse wave on click
+    class PulseWave {
+        constructor() {
+            this.radius = 0;
+            this.maxRadius = 240;
+            this.alpha = 0.8;
+            this.speed = 5;
+        }
+        update() {
+            this.radius += this.speed;
+            this.alpha = Math.max(0, 0.8 * (1 - this.radius / this.maxRadius));
+        }
+        isDead() { return this.radius >= this.maxRadius; }
+        draw(ctx) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(CX, CY, this.radius, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(0, 217, 255, ${this.alpha})`;
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(0, 217, 255, 0.6)';
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+
+    // Build nodes across 3 orbits
+    const nodes = [];
+    const cyan = '#00d9ff';
+    const purple = '#a855f7';
+    const teal = '#00b4cc';
+
+    // Inner ring — 4 large diamonds, fast, cyan
+    const innerCount = 4;
+    for (let i = 0; i < innerCount; i++) {
+        nodes.push(new OrbitNode(290, (i / innerCount) * Math.PI * 2, 0.018, 7, cyan, 'diamond'));
+    }
+
+    // Middle ring — 6 squares, medium speed, mix
+    const midCount = 6;
+    for (let i = 0; i < midCount; i++) {
+        const color = i % 2 === 0 ? cyan : purple;
+        nodes.push(new OrbitNode(320, (i / midCount) * Math.PI * 2 + 0.3, 0.011, 5, color, 'square'));
+    }
+
+    // Outer ring — 8 small triangles, slow, purple
+    const outerCount = 8;
+    for (let i = 0; i < outerCount; i++) {
+        const color = i % 3 === 0 ? cyan : purple;
+        nodes.push(new OrbitNode(345, (i / outerCount) * Math.PI * 2 + 0.6, 0.007, 4, color, 'tri'));
+    }
+
+    // Accent ring — 3 crosses, very slow, teal
+    const accentCount = 3;
+    for (let i = 0; i < accentCount; i++) {
+        nodes.push(new OrbitNode(305, (i / accentCount) * Math.PI * 2 + 1.0, -0.009, 6, teal, 'cross'));
+    }
+
+    let frameT = 0;
+
+    function drawConnections(ctx) {
+        const allNodes = nodes;
+        for (let i = 0; i < allNodes.length; i++) {
+            for (let j = i + 1; j < allNodes.length; j++) {
+                const dx = allNodes[i].x - allNodes[j].x;
+                const dy = allNodes[i].y - allNodes[j].y;
+                const d = Math.sqrt(dx * dx + dy * dy);
+                if (d < 80) {
+                    const alpha = (1 - d / 80) * 0.35;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(allNodes[i].x, allNodes[j].y);
+                    ctx.moveTo(allNodes[i].x, allNodes[i].y);
+                    ctx.lineTo(allNodes[j].x, allNodes[j].y);
+                    ctx.strokeStyle = `rgba(0, 217, 255, ${alpha})`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+        }
+    }
+
+    function drawOrbitTrails(ctx) {
+        // Faint orbit circles
+        const radii = [290, 320, 345];
+        radii.forEach((r, i) => {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(CX, CY, r, 0, Math.PI * 2);
+            ctx.strokeStyle = i === 0 ? 'rgba(0,217,255,0.06)' : 'rgba(168,85,247,0.05)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 12]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.restore();
+        });
+    }
+
+    function renderOrbit() {
+        frameT++;
+        ctx2.clearRect(0, 0, SIZE, SIZE);
+
+        drawOrbitTrails(ctx2);
+
+        nodes.forEach(n => n.update(frameT));
+        drawConnections(ctx2);
+        nodes.forEach(n => n.draw(ctx2, frameT));
+
+        // Pulse waves
+        for (let i = pulseWaves.length - 1; i >= 0; i--) {
+            pulseWaves[i].update();
+            pulseWaves[i].draw(ctx2);
+            if (pulseWaves[i].isDead()) pulseWaves.splice(i, 1);
+        }
+
+        requestAnimationFrame(renderOrbit);
+    }
+
+    renderOrbit();
+
+    // Trigger pulse on logo click
+    if (interactiveLogo) {
+        interactiveLogo.addEventListener('click', () => {
+            pulseWaves.push(new PulseWave());
+            pulseWaves.push(new PulseWave());
+            pulseWaves[pulseWaves.length - 1].speed = 3;
+        });
+    }
+}
+
+// ---- 3D tilt on mouse move ----
 if (interactiveLogo && logoContainer) {
     let logoRotationX = 0;
     let logoRotationY = 0;
     let targetRotationX = 0;
     let targetRotationY = 0;
 
-    // 3D rotation on mouse move
     document.addEventListener('mousemove', (e) => {
-        if (window.scrollY < window.innerHeight) { // Only when on hero section
+        if (window.scrollY < window.innerHeight) {
             const rect = logoContainer.getBoundingClientRect();
-            const containerCenterX = rect.left + rect.width / 2;
-            const containerCenterY = rect.top + rect.height / 2;
-
-            const distX = (e.clientX - containerCenterX) / rect.width;
-            const distY = (e.clientY - containerCenterY) / rect.height;
-
+            const distX = (e.clientX - (rect.left + rect.width / 2)) / rect.width;
+            const distY = (e.clientY - (rect.top + rect.height / 2)) / rect.height;
             targetRotationY = distX * 25;
             targetRotationX = -distY * 25;
         }
     });
 
-    // Smooth animation loop for logo rotation
     function animateLogo() {
         logoRotationX += (targetRotationX - logoRotationX) * 0.1;
         logoRotationY += (targetRotationY - logoRotationY) * 0.1;
-
-        interactiveLogo.style.transform = `
-            perspective(1000px)
-            rotateX(${logoRotationX}deg)
-            rotateY(${logoRotationY}deg)
-            scale(1)
-        `;
-
+        interactiveLogo.style.transform = `perspective(1000px) rotateX(${logoRotationX}deg) rotateY(${logoRotationY}deg)`;
         requestAnimationFrame(animateLogo);
     }
-
     animateLogo();
 
-    // Click for particle burst
     interactiveLogo.addEventListener('click', (e) => {
         const rect = interactiveLogo.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        createParticles(centerX, centerY, 30);
-        
-        // Create explosive game pixel burst!
-        for (let i = 0; i < 50; i++) {
-            createGamePixels(centerX, centerY, 1);
-        }
-
-        // Bonus: Brief scale animation
-        interactiveLogo.style.transform += ' scale(0.95)';
-        setTimeout(() => {
-            interactiveLogo.style.transform = interactiveLogo.style.transform.replace(' scale(0.95)', '');
-        }, 100);
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        createParticles(cx, cy, 30);
+        for (let i = 0; i < 50; i++) createGamePixels(cx, cy, 1);
     });
 
-    // Hover effect
     interactiveLogo.addEventListener('mouseenter', () => {
-        interactiveLogo.style.filter = 'drop-shadow(0 30px 80px rgba(0, 217, 255, 0.4))';
+        interactiveLogo.style.filter = 'drop-shadow(0 0 60px rgba(0, 217, 255, 0.55))';
     });
-
     interactiveLogo.addEventListener('mouseleave', () => {
-        interactiveLogo.style.filter = 'drop-shadow(0 20px 60px rgba(0, 217, 255, 0.2))';
+        interactiveLogo.style.filter = 'drop-shadow(0 0 40px rgba(0, 217, 255, 0.35))';
         targetRotationX = 0;
         targetRotationY = 0;
     });
@@ -698,6 +913,26 @@ function animationLoop() {
 }
 
 animationLoop();
+
+// ========== TYPEWRITER EFFECT ==========
+
+const typewriterText = document.querySelector('.typewriter-text');
+const fullText = 'Where imagination becomes playable';
+
+if (typewriterText) {
+    let charIndex = 0;
+    
+    function typeNextChar() {
+        if (charIndex < fullText.length) {
+            typewriterText.textContent += fullText[charIndex];
+            charIndex++;
+            setTimeout(typeNextChar, 55);
+        }
+    }
+
+    // Start typewriter after logo animation (1.2s delay)
+    setTimeout(typeNextChar, 1200);
+}
 
 // ========== INTERACTIVE ELEMENTS ON PAGE ==========
 
