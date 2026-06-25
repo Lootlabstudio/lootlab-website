@@ -399,9 +399,9 @@ section {
 .featured-game {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 100px;
+    gap: 30px;
     align-items: center;
-    margin-bottom: 150px;
+    margin-bottom: 0px;
     animation: fade-in 0.8s ease-out;
 }
 
@@ -410,7 +410,7 @@ section {
     height: auto;
     aspect-ratio: 16 / 9;
     max-width: 100%;
-    margin-top: 240px;
+    margin-top: 350px;
 }
 
 .featured-game-image {
@@ -525,8 +525,8 @@ section {
 
 /* Other Games Grid */
 .other-games {
-    margin-top: 80px;
-    padding-top: 60px;
+    margin-top: 20px;
+    padding-top: 30px;
     border-top: 1px solid var(--glass-light);
 }
 
