@@ -516,11 +516,6 @@ document.addEventListener('mousemove', (e) => {
             cometTrail.shift();
         }
         lastCometTime = now;
-        
-        // Occasionally spawn game pixels near cursor
-        if (Math.random() < 0.3) {
-            createGamePixels(mouseX, mouseY, 2);
-        }
     }
 
     const parallaxElements = document.querySelectorAll('[data-parallax]');
