@@ -478,11 +478,7 @@ if (interactiveLogo && logoContainer) {
     animateLogo();
 
     interactiveLogo.addEventListener('click', (e) => {
-        const rect = interactiveLogo.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-        createParticles(cx, cy, 30);
-        for (let i = 0; i < 50; i++) createGamePixels(cx, cy, 1);
+        // Click handler for interactivity (3D tilt effect handles the response)
     });
 
     interactiveLogo.addEventListener('mouseenter', () => {
