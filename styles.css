@@ -114,6 +114,7 @@ section {
     top: -200px;
     right: -100px;
     animation: float 6s ease-in-out infinite;
+    will-change: transform;
 }
 
 .hero-gradient-2 {
@@ -124,6 +125,7 @@ section {
     bottom: -150px;
     left: -100px;
     animation: float 8s ease-in-out infinite reverse;
+    will-change: transform;
 }
 
 .hero-content {
@@ -385,9 +387,9 @@ section {
 .featured-game {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 60px;
+    gap: 100px;
     align-items: center;
-    margin-bottom: 100px;
+    margin-bottom: 150px;
     animation: fade-in 0.8s ease-out;
 }
 
@@ -396,6 +398,7 @@ section {
     height: auto;
     aspect-ratio: 16 / 9;
     max-width: 100%;
+    margin-top: 240px;
 }
 
 .featured-game-image {
@@ -409,6 +412,7 @@ section {
     padding: 12px;
     box-sizing: border-box;
     backdrop-filter: blur(10px);
+    will-change: transform;
 }
 
 .game-image-placeholder {
@@ -529,12 +533,13 @@ section {
     backdrop-filter: blur(10px);
     transition: var(--transition-smooth);
     cursor: pointer;
+    will-change: transform;
 }
 
 .game-card:hover {
     background: var(--glass-medium);
     border-color: var(--accent-primary);
-    transform: translateY(-5px);
+    filter: drop-shadow(0 10px 30px rgba(0, 217, 255, 0.2));
 }
 
 .game-card-visual {
@@ -664,12 +669,6 @@ section {
     background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(168, 85, 247, 0.1));
     border-color: var(--accent-primary);
     transform: translateY(-8px);
-}
-
-.philosophy-icon {
-    font-size: 2.5em;
-    margin-bottom: 20px;
-    display: inline-block;
 }
 
 .philosophy-card h4 {
