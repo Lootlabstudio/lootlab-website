@@ -539,6 +539,19 @@ window.addEventListener('scroll', () => {
     });
 });
 
+// ========== HERO VIDEO — LOOP WITH PAUSE ==========
+
+(function initHeroVideoLoop() {
+    const video = document.getElementById('heroVideo');
+    if (!video) return;
+    video.addEventListener('ended', () => {
+        setTimeout(() => {
+            video.currentTime = 0;
+            video.play();
+        }, 5000); // 5-second pause between loops
+    });
+})();
+
 // ========== SMOOTH SCROLL TO SECTIONS ==========
 
 document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
