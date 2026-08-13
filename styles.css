@@ -1407,13 +1407,20 @@ section {
         min-height: 100svh;
     }
 
+    .hero-background {
+        width: 120%;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
     .hero-video {
-        transform: scale(1.25) translateY(2%);
+        transform: scale(0.82) translateY(0);
     }
 
     .hero-brand {
-        top: 14px;
-        left: 16px;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
     }
 
     .hero-brand-logo {
@@ -1505,7 +1512,8 @@ section {
 
     .hero-brand {
         top: 12px;
-        left: 12px;
+        left: 50%;
+        transform: translateX(-50%);
     }
 
     .hero-brand-logo {
@@ -1513,13 +1521,31 @@ section {
         height: 88px;
     }
 
+    .hero-background {
+        width: 140%;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
     .hero-video {
-        transform: scale(1.5) translateY(6%);
+        transform: scale(0.72) translateY(0);
     }
 
     .hero-content {
         bottom: 42px;
         padding: 0 16px;
+    }
+
+    .game-visual {
+        margin-top: -90px;
+    }
+
+    .featured-game-image {
+        margin-top: -20px;
+    }
+
+    .other-games {
+        margin-top: -30px;
     }
 
     .hero-title {
