@@ -1409,12 +1409,12 @@ section {
 
     .hero-background {
         width: 120%;
-        left: 50%;
+        left: 48%;
         transform: translateX(-50%);
     }
 
     .hero-video {
-        transform: scale(0.82) translateY(0);
+        transform: scale(0.82) translateX(-18px) translateY(0);
     }
 
     .hero-brand {
@@ -1523,12 +1523,12 @@ section {
 
     .hero-background {
         width: 140%;
-        left: 50%;
+        left: 47%;
         transform: translateX(-50%);
     }
 
     .hero-video {
-        transform: scale(0.72) translateY(0);
+        transform: scale(0.72) translateX(-14px) translateY(0);
     }
 
     .hero-content {
@@ -1541,7 +1541,9 @@ section {
     }
 
     .featured-game-image {
-        margin-top: -20px;
+        margin-top: 10px;
+        padding-top: 10px;
+        padding-bottom: 10px;
     }
 
     .other-games {
