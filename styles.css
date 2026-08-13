@@ -1408,7 +1408,7 @@ section {
     }
 
     .hero-background {
-        width: calc(100% - 28px);
+        width: calc(100% - 12px);
         left: 50%;
         transform: translateX(-50%);
         border-radius: 26px;
@@ -1416,7 +1416,7 @@ section {
     }
 
     .hero-video {
-        transform: scale(0.82) translateX(0) translateY(0);
+        transform: scale(0.9) translateX(0) translateY(0);
         border-radius: 26px;
     }
 
@@ -1434,6 +1434,7 @@ section {
     .hero-content {
         bottom: 48px;
         padding: 0 20px;
+        transform: translateX(-10px);
     }
 
     .hero-title {
@@ -1525,7 +1526,7 @@ section {
     }
 
     .hero-background {
-        width: calc(100% - 22px);
+        width: calc(100% - 10px);
         left: 50%;
         transform: translateX(-50%);
         border-radius: 28px;
@@ -1533,27 +1534,33 @@ section {
     }
 
     .hero-video {
-        transform: scale(0.72) translateX(0) translateY(0);
+        transform: scale(0.82) translateX(0) translateY(0);
         border-radius: 28px;
     }
 
     .hero-content {
         bottom: 42px;
         padding: 0 16px;
+        transform: translateX(-12px);
+    }
+
+    .hero-cta {
+        transform: translateX(-8px);
     }
 
     .game-visual {
-        margin-top: -90px;
+        margin-top: 12px;
     }
 
     .featured-game-image {
-        margin-top: 52px;
-        padding-top: 28px;
-        padding-bottom: 28px;
+        margin-top: 24px;
+        margin-bottom: 34px;
+        padding-top: 18px;
+        padding-bottom: 18px;
     }
 
     .other-games {
-        margin-top: -50px;
+        margin-top: 0;
     }
 
     .hero-title {
