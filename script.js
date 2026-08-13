@@ -95,7 +95,7 @@ let mouseVelocityY = 0;
 let lastMouseX = 0;
 let lastMouseY = 0;
 
-// ========== SCROLL & PARALLAX STATE ==========
+// ========== SCROLL STATE ==========
 
 let scrollY = 0;
 let targetScrollY = 0;
@@ -105,31 +105,6 @@ function updateScroll() {
 }
 
 window.addEventListener('scroll', updateScroll, { passive: true });
-
-// Parallax elements with different speed multipliers
-const parallaxElements = [
-    { selector: '.hero-gradient-1', speed: -0.5 },      // Moves opposite to scroll
-    { selector: '.hero-gradient-2', speed: -0.3 },      // Slower movement
-    { selector: '.featured-game-image', speed: -0.2 },  // Moves backward to prevent overlap
-    { selector: '.game-card', speed: 0.2, stagger: true }, // Staggered effect per card
-];
-
-function updateParallax() {
-    parallaxElements.forEach(item => {
-        const elements = document.querySelectorAll(item.selector);
-        
-        elements.forEach((el, index) => {
-            let offset = scrollY * item.speed;
-            
-            // Stagger effect for multiple elements
-            if (item.stagger) {
-                offset += index * 5;
-            }
-            
-            el.style.transform = `translateY(${offset}px)`;
-        });
-    });
-}
 
 // ========== CURSOR GLOW EFFECT ==========
 // Removed - using comet trail only for cleaner effect
@@ -855,7 +830,6 @@ if ('IntersectionObserver' in window) {
 function animationLoop() {
     updateParticles();
     updateGamePixels(mouseX, mouseY);
-    updateParallax();
     requestAnimationFrame(animationLoop);
 }
 
