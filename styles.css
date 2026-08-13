@@ -1408,13 +1408,16 @@ section {
     }
 
     .hero-background {
-        width: 120%;
-        left: 48%;
+        width: 116%;
+        left: 50%;
         transform: translateX(-50%);
+        border-radius: 26px;
+        overflow: hidden;
     }
 
     .hero-video {
-        transform: scale(0.82) translateX(-18px) translateY(0);
+        transform: scale(0.82) translateX(-12px) translateY(0);
+        border-radius: 26px;
     }
 
     .hero-brand {
@@ -1522,13 +1525,16 @@ section {
     }
 
     .hero-background {
-        width: 140%;
-        left: 47%;
+        width: 128%;
+        left: 50%;
         transform: translateX(-50%);
+        border-radius: 28px;
+        overflow: hidden;
     }
 
     .hero-video {
-        transform: scale(0.72) translateX(-14px) translateY(0);
+        transform: scale(0.72) translateX(-10px) translateY(0);
+        border-radius: 28px;
     }
 
     .hero-content {
@@ -1541,9 +1547,9 @@ section {
     }
 
     .featured-game-image {
-        margin-top: 10px;
-        padding-top: 10px;
-        padding-bottom: 10px;
+        margin-top: 40px;
+        padding-top: 24px;
+        padding-bottom: 24px;
     }
 
     .other-games {
