@@ -1554,25 +1554,30 @@ section {
     }
 
     .hero-video {
-        transform: scale(0.82) translateX(0) translateY(0);
+        transform: scale(0.82) translateX(0) translateY(18px);
         border-radius: 28px;
     }
 
     .hero-content {
         bottom: 42px;
         padding: 0 16px;
-        transform: translateX(-12px);
+        transform: translateX(-50%);
     }
 
     .hero-cta {
-        transform: translateX(-8px);
+        transform: none;
     }
 
     .game-visual {
+        height: auto;
+        aspect-ratio: auto;
         margin-top: 12px;
     }
 
     .featured-game-image {
+        width: 100%;
+        height: auto;
+        max-height: none;
         margin-top: 24px;
         margin-bottom: 34px;
         padding-top: 18px;
@@ -1580,7 +1585,8 @@ section {
     }
 
     .other-games {
-        margin-top: 0;
+        clear: both;
+        margin-top: 24px;
     }
 
     .hero-title {
