@@ -106,7 +106,7 @@ section {
     object-fit: cover;
     object-position: center center;
     z-index: 0;
-    transform: scale(1.12) translateY(-2%) translateX(-2.5%);
+    transform: scale(1.08) translateY(-2%) translateX(0);
 }
 
 /* ---- Static cinematic overlay for text readability ---- */
@@ -298,13 +298,14 @@ section {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     animation: fade-in 1s ease-out;
 }
 
 .hero-subtitle {
     font-size: 1.15em;
     color: var(--text-secondary);
-    margin-bottom: 40px;
+    margin-bottom: 26px;
     font-weight: 300;
     letter-spacing: 1px;
     min-height: 1.5em;
@@ -477,6 +478,16 @@ section {
     margin-top: 150px;
 }
 
+@media (min-width: 769px) {
+    .game-visual {
+        margin-top: 18px;
+    }
+
+    .featured-game-image {
+        margin-top: 0;
+    }
+}
+
 .game-image-placeholder {
     width: 100%;
     height: 100%;
@@ -580,7 +591,7 @@ section {
 
 /* Other Games Grid */
 .other-games {
-    margin-top: -180px;
+    margin-top: 20px;
     padding-top: 0;
     border-top: 1px solid rgba(255, 255, 255, 0.02);
 }
@@ -1408,7 +1419,9 @@ section {
     }
 
     .hero-background {
-        width: calc(100% - 12px);
+        width: calc(100% - 18px);
+        height: calc(100% - 22px);
+        top: 11px;
         left: 50%;
         transform: translateX(-50%);
         border-radius: 26px;
@@ -1416,14 +1429,15 @@ section {
     }
 
     .hero-video {
-        transform: scale(0.9) translateX(0) translateY(0);
+        transform: scale(1.02) translateX(0) translateY(10px);
         border-radius: 26px;
     }
 
     .hero-brand {
-        top: 16px;
+        top: 14px;
         left: 50%;
         transform: translateX(-50%);
+        z-index: 10;
     }
 
     .hero-brand-logo {
@@ -1432,9 +1446,13 @@ section {
     }
 
     .hero-content {
-        bottom: 48px;
+        bottom: 26px;
+        left: 50%;
+        width: min(100% - 28px, 420px);
+        max-width: 420px;
         padding: 0 20px;
-        transform: translateX(-10px);
+        transform: translateX(-50%);
+        box-sizing: border-box;
     }
 
     .hero-title {
@@ -1471,12 +1489,14 @@ section {
     .hero-subtitle {
         font-size: 1em;
         white-space: normal;
+        margin-bottom: 22px;
     }
 
     .hero-cta {
         flex-direction: column;
         align-items: center;
         width: 100%;
+        gap: 12px;
     }
 
     .btn {
