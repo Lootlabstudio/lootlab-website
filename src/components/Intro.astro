@@ -1,0 +1,66 @@
+---
+import '../styles/intro.css';
+import { site } from '../data/site.js';
+
+// Captions fade in and out over the scroll timeline: [in-start, in-end, out-start, out-end].
+const captions = [
+  { range: '0.30,0.36,0.44,0.48', text: 'Every game starts as an idea,' },
+  { range: '0.48,0.52,0.59,0.63', text: 'And then design,' },
+  { range: '0.63,0.67,0.73,0.77', text: 'Fill it with life,' },
+  { range: '0.77,0.80,0.85,0.88', text: 'Light it up,' },
+];
+const steps = ['Wireframe', 'Materials', 'Populate', 'Lighting', 'Play'];
+---
+<section class="intro" id="intro" aria-labelledby="intro-title">
+  <h1 id="intro-title" class="sr-only">{site.name}: {site.tagline}</h1>
+  <div class="stage">
+    <canvas id="gl" aria-hidden="true"></canvas>
+    <div class="vignette"></div>
+    <canvas id="knock" role="img" aria-label="Loot Lab Game Studio badge"></canvas>
+
+    <div class="editor" id="editor" aria-hidden="true">
+      <div class="wrap">
+        <div class="panel">
+          <h3>new_world.scene</h3>
+          <ol id="steps">
+            {steps.map((s, i) => <li><b>{String(i + 1).padStart(2, '0')}</b>{s}</li>)}
+          </ol>
+        </div>
+        <div class="panel stats-panel">
+          <h3>Stats</h3>
+          <dl class="stats">
+            <dt>Triangles</dt><dd id="sTris">0</dd>
+            <dt>Entities</dt><dd id="sEnt">0</dd>
+            <dt>Lights</dt><dd id="sLights">0</dd>
+            <dt>Build</dt><dd id="sBuild">0%</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="hud" id="hud">
+      <div class="wrap">
+        <p><strong>{site.name}</strong> is an independent game studio. Scroll to step inside.</p>
+        <span class="hint" aria-hidden="true"><i></i>Scroll to begin</span>
+      </div>
+    </div>
+
+    {captions.map((c) => (
+      <div class="cap" data-cap={c.range}><div class="wrap"><p class="big">{c.text}</p></div></div>
+    ))}
+    <div class="cap" data-cap="0.90,0.95,2,2" id="finale">
+      <div class="wrap">
+        <p class="big">And watch imagination become playable.</p>
+        <div class="actions">
+          <a class="btn btn-gold" href="#games">See our games</a>
+          <a class="btn btn-ghost" href="#studio">Meet the studio</a>
+        </div>
+      </div>
+    </div>
+    <div class="meter" id="meter"></div>
+  </div>
+</section>
+
+<script>
+  import '../scripts/intro.js';
+</script>

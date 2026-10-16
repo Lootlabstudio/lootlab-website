@@ -1,0 +1,70 @@
+:root {
+  --ink: #0f1424;
+  --night: #0b0f1c;
+  --panel: #161d33;
+  --line: rgba(170, 186, 255, 0.14);
+  --text: #eef1fa;
+  --muted: #9aa3bf;
+  --teal: #3fe0c5;
+  --gold: #ffc83d;
+  --wrap: min(1240px, 100% - 48px);
+  --font: 'Archivo Variable', system-ui, sans-serif;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; margin: 0; }
+dialog { margin: auto; }
+html { -webkit-text-size-adjust: 100%; }
+body { background: var(--ink); color: var(--text); font: 400 17px/1.6 var(--font); -webkit-font-smoothing: antialiased; }
+img, video, canvas { display: block; max-width: 100%; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 4px; }
+.wrap { width: var(--wrap); margin-inline: auto; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+h2 { font-stretch: 112%; font-weight: 800; font-size: clamp(36px, 4.6vw, 64px); line-height: 1; letter-spacing: -0.015em; }
+
+.skip-link { position: absolute; left: 16px; top: -60px; z-index: 100; padding: 10px 16px; border-radius: 10px; background: var(--text); color: var(--ink); font-weight: 600; text-decoration: none; }
+.skip-link:focus { top: 16px; }
+
+/* ---------- Buttons ---------- */
+.btn { display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 24px; border-radius: 999px; font: 600 16px/1 var(--font); white-space: nowrap; text-decoration: none; cursor: pointer; border: 1px solid transparent; transition: transform .15s, background .2s; }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--text); color: var(--ink); }
+.btn-primary:hover { background: #fff; }
+.btn-ghost { border-color: rgba(238,241,250,.3); color: var(--text); background: rgba(15,20,36,.35); backdrop-filter: blur(8px); }
+.btn-ghost:hover { background: rgba(255,255,255,.1); }
+.btn-gold { background: var(--gold); color: #2a1d00; }
+.icon-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: rgba(15,20,36,.5); color: var(--text); cursor: pointer; font-size: 16px; }
+.icon-btn:hover { background: rgba(255,255,255,.08); }
+
+/* ---------- Header ---------- */
+.top { position: fixed; inset: 0 0 auto; z-index: 40; transition: background .3s; }
+.top.solid { background: rgba(15,20,36,.72); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 76px; }
+.top .brand img { width: 46px; height: auto; }
+/* On the homepage the big badge owns the intro; the small one returns with the solid header. */
+.top .brand { opacity: 0; visibility: hidden; transition: opacity .3s, visibility .3s; }
+.top.solid .brand { opacity: 1; visibility: visible; }
+.top nav { display: flex; gap: 28px; font-weight: 500; font-size: 15px; }
+.top nav a { text-decoration: none; color: var(--muted); padding-block: 12px; }
+.top nav a:hover, .top nav a[aria-current="page"] { color: var(--text); }
+
+/* ---------- Footer ---------- */
+.site-footer { border-top: 1px solid var(--line); padding-block: 36px; color: var(--muted); font-size: 14px; }
+.site-footer .wrap { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.site-footer a { text-decoration: none; display: inline-block; padding-block: 12px; }
+.site-footer a:hover { color: var(--text); }
+
+/* ---------- Dialogs ---------- */
+dialog.trailer, dialog.viewer { padding: 0; border: 0; background: transparent; overflow: visible; }
+dialog.trailer::backdrop, dialog.viewer::backdrop { background: rgba(5,8,16,.92); }
+dialog.trailer video { height: min(86vh, 900px); aspect-ratio: 9 / 16; border-radius: 20px; }
+dialog.viewer { max-width: 94vw; }
+dialog.viewer img { max-width: 92vw; max-height: 90vh; width: auto; height: auto; border-radius: 18px; }
+dialog.trailer [data-close], dialog.viewer [data-close] { position: absolute; top: 0; right: -58px; }
+
+@media (max-width: 900px) {
+  .top nav { display: none; }
+  dialog.trailer [data-close], dialog.viewer [data-close] { right: 8px; top: 8px; }
+  dialog.trailer video { height: auto; width: 92vw; }
+}

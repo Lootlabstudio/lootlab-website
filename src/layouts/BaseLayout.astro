@@ -1,0 +1,36 @@
+---
+import '@fontsource-variable/archivo/wdth.css';
+import '../styles/global.css';
+import SEO from '../components/SEO.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  jsonLd?: Record<string, unknown>[];
+  overIntro?: boolean;
+}
+const { overIntro = false, ...seo } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <SEO {...seo} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <SiteHeader overIntro={overIntro} />
+    <main id="main">
+      <slot />
+    </main>
+    <SiteFooter />
+    <slot name="dialogs" />
+    <script>
+      import '../scripts/site.js';
+    </script>
+  </body>
+</html>

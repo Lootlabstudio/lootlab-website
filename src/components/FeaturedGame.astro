@@ -1,0 +1,31 @@
+---
+import { Image } from 'astro:assets';
+import Showcase from './Showcase.astro';
+import '../styles/toon-tactics.css';
+
+interface Props { game: any }
+const { game } = Astro.props;
+---
+<section class="details" id="games" aria-labelledby="featured-title">
+  <div class="wrap">
+    <div class="grid">
+      <div>
+        <h2 id="featured-title" class="tilt">
+          <Image src={game.logo} alt={game.name} width={880} data-tilt />
+        </h2>
+        <p class="desc">{game.description}</p>
+        <ul class="loop" aria-label="Core loop">
+          {game.features.map((f: any) => <li>{f.title}</li>)}
+        </ul>
+        <div class="actions">
+          <a class="btn btn-gold" href={`/games/${game.slug}/`}>Explore {game.name}</a>
+          <button class="btn btn-ghost" type="button" data-open-trailer>Watch the trailer</button>
+        </div>
+      </div>
+      <div class="phone">
+        <video data-loop src={game.trailer.loop} poster={game.trailer.poster} muted loop playsinline autoplay preload="none" aria-label={`${game.name} trailer, muted preview`}></video>
+      </div>
+    </div>
+    <Showcase game={game} />
+  </div>
+</section>

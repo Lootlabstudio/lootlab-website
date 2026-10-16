@@ -1,0 +1,49 @@
+/* Contact section */
+.contact { position: relative; overflow: hidden; isolation: isolate; padding-block: 170px 150px; border-top: 1px solid var(--line); background: var(--night); scroll-margin-top: 0; }
+.contact::before { content: ""; position: absolute; inset: -25%; z-index: -2; background: radial-gradient(38% 48% at 22% 32%, rgba(63,224,197,.15), transparent 70%), radial-gradient(42% 52% at 80% 72%, rgba(120,96,230,.2), transparent 70%); animation: drift 20s ease-in-out infinite alternate; }
+@keyframes drift { to { transform: translate3d(4%, -5%, 0) rotate(5deg); } }
+.contact-sky { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.sparkle { position: absolute; width: var(--s); height: var(--s); background: #eafffb; clip-path: polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%); opacity: .05; animation: twinkle var(--d) ease-in-out var(--delay) infinite; }
+@keyframes twinkle { 0%, 100% { opacity: .05; transform: scale(.6); } 50% { opacity: var(--o); transform: scale(1); } }
+.contact .grid { display: grid; grid-template-columns: 1fr minmax(0, 520px); gap: 80px; align-items: center; }
+.hello-badge { width: 84px; height: auto; margin-bottom: 30px; filter: drop-shadow(0 0 22px rgba(63,224,197,.5)); }
+.contact h2 { font-stretch: 125%; font-weight: 850; font-size: clamp(56px, 8vw, 120px); line-height: .9; letter-spacing: -0.02em; }
+.hello p { margin-top: 26px; color: var(--muted); font-size: 19px; max-width: 36ch; }
+.mail-pill { display: inline-flex; align-items: center; gap: 8px; margin-top: 36px; padding: 6px 6px 6px 22px; border-radius: 999px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(8px); }
+.mail-pill a { padding-block: 8px; font-stretch: 112%; font-weight: 700; font-size: clamp(18px, 2vw, 24px); text-decoration: none; transition: color .2s; }
+.mail-pill a:hover { color: var(--teal); }
+.mail-pill button { height: 42px; padding: 0 18px; border: 0; border-radius: 999px; background: var(--teal); color: #052620; font: 600 14px/1 var(--font); cursor: pointer; transition: transform .15s; }
+.mail-pill button:active { transform: scale(.95); }
+.socials { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+.socials a { display: inline-block; font-size: 14px; padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); font-weight: 600; text-decoration: none; transition: border-color .2s, color .2s; }
+.socials a:hover { border-color: var(--teal); color: var(--teal); }
+
+.glass { display: grid; gap: 18px; padding: 34px; border-radius: 28px; background: linear-gradient(160deg, rgba(255,255,255,.08), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(18px); box-shadow: 0 40px 120px rgba(0,0,0,.45); }
+.topics { border: 0; padding: 0; margin: 0 0 4px; display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.topics legend { padding: 0; margin-bottom: 12px; font-size: 14px; font-weight: 600; color: var(--muted); }
+.topics label { position: relative; }
+.topics input { position: absolute; opacity: 0; pointer-events: none; }
+.topics span { display: inline-block; padding: 9px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); font-size: 14px; font-weight: 600; cursor: pointer; transition: background .2s, color .2s, border-color .2s; }
+.topics span:hover { border-color: rgba(63,224,197,.6); }
+.topics input:checked + span { background: var(--teal); color: #052620; border-color: transparent; }
+.topics input:focus-visible + span { outline: 2px solid var(--teal); outline-offset: 3px; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field { display: grid; gap: 8px; font-size: 14px; font-weight: 600; color: var(--muted); }
+.field input, .field textarea { font: inherit; font-weight: 400; color: var(--text); background: rgba(11,15,28,.55); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 14px 16px; transition: border-color .2s, box-shadow .2s; }
+.field textarea { resize: vertical; min-height: 130px; }
+.field input:focus, .field textarea:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 4px rgba(63,224,197,.15); }
+.send { width: 100%; justify-content: center; margin-top: 4px; }
+[data-status] { min-height: 1.4em; font-size: 14px; color: var(--teal); text-align: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .contact::before, .sparkle { animation: none; }
+  .sparkle { opacity: .35; }
+}
+@media (max-width: 900px) {
+  .contact { padding-block: 104px 88px; }
+  .contact .grid { grid-template-columns: 1fr; gap: 44px; }
+  .row { grid-template-columns: 1fr; }
+  .glass { padding: 22px; border-radius: 22px; }
+  .hello-badge { width: 64px; margin-bottom: 22px; }
+  .mail-pill { padding-left: 16px; }
+}

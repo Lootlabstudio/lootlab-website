@@ -1,0 +1,101 @@
+---
+import { Image, getImage } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Showcase from '../../components/Showcase.astro';
+import MediaDialogs from '../../components/MediaDialogs.astro';
+import { games } from '../../data/games.js';
+import { site } from '../../data/site.js';
+import '../../styles/toon-tactics.css';
+import '../../styles/game-page.css';
+
+export function getStaticPaths() {
+  return games.map((game) => ({ params: { slug: game.slug }, props: { game } }));
+}
+
+const { game } = Astro.props;
+const backdrop = await getImage({ src: game.gallery[1]?.src ?? game.cover.src, width: 640, format: 'webp' });
+const share = await getImage({ src: game.cover.src, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
+const updatesHref = `mailto:${site.email}?subject=${encodeURIComponent(`${game.name} updates`)}`;
+
+const jsonLd = [{
+  '@context': 'https://schema.org',
+  '@type': 'VideoGame',
+  name: game.name,
+  description: game.description,
+  genre: game.genre,
+  gamePlatform: game.platforms,
+  image: new URL(share.src, site.url).href,
+  url: new URL(`/games/${game.slug}/`, site.url).href,
+  author: { '@type': 'Organization', name: site.name, url: site.url },
+}];
+---
+<BaseLayout title={game.name} description={game.description} image={share.src} jsonLd={jsonLd}>
+  <section class="game-hero" aria-labelledby="game-title">
+    <div class="game-hero-bg" style={`background-image: url(${backdrop.src})`} aria-hidden="true"></div>
+    <div class="wrap">
+      <Image class="logo" src={game.logo} alt="" width={1120} loading="eager" />
+      <h1 id="game-title" class="sr-only">{game.name}</h1>
+      <p class="summary">{game.description}</p>
+      <ul class="chips" aria-label="At a glance">
+        <li class="status">{game.status}</li>
+        {game.platforms.map((p: string) => <li>{p}</li>)}
+        <li>{game.genre}</li>
+      </ul>
+      <div class="actions">
+        <button class="btn btn-gold" type="button" data-open-trailer>Watch the trailer</button>
+        <a class="btn btn-ghost" href={updatesHref}>Get updates</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="game-section" aria-labelledby="about-game">
+    <div class="wrap game-about">
+      <div>
+        <h2 id="about-game">Build your squad. Out-think the board.</h2>
+        <p>{game.summary} Every battle is decided before it starts: pick your heroes, place them with care, and let the fight play out.</p>
+      </div>
+      <ul class="features">
+        {game.features.map((f: any) => <li><h3>{f.title}</h3><p>{f.detail}</p></li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="game-section game-trailer" aria-labelledby="trailer-title">
+    <div class="wrap grid">
+      <div class="phone">
+        <video data-loop src={game.trailer.loop} poster={game.trailer.poster} muted loop playsinline autoplay preload="none" aria-label={`${game.name} trailer, muted preview`}></video>
+      </div>
+      <div>
+        <h2 id="trailer-title">See it in motion.</h2>
+        <p>A first look at the heroes, the battles and the worlds of {game.name}.</p>
+        <button class="btn btn-gold" type="button" data-open-trailer>Watch with sound</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="game-section" aria-label={`${game.name} gallery`}>
+    <div class="wrap">
+      <h2>Gallery</h2>
+      <Showcase game={game} />
+    </div>
+  </section>
+
+  <section class="game-section" aria-labelledby="release-title">
+    <div class="wrap release">
+      <div>
+        <h2 id="release-title">Coming soon.</h2>
+        <p>{game.name} is in active development. Platforms and a release date will be announced here first.</p>
+        <a class="btn btn-gold" href={updatesHref}>Get updates</a>
+      </div>
+      <dl>
+        <dt>Genre</dt><dd>{game.genre}</dd>
+        <dt>Platforms</dt><dd>{game.platforms.join(', ')}</dd>
+        <dt>Status</dt><dd>{game.status}</dd>
+        <dt>Release</dt><dd>{game.release}</dd>
+        <dt>Developer</dt><dd>{site.name}</dd>
+      </dl>
+    </div>
+  </section>
+
+  <MediaDialogs slot="dialogs" game={game} />
+</BaseLayout>

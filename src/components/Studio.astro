@@ -1,0 +1,42 @@
+---
+import { Image } from 'astro:assets';
+import workspace from '../assets/studio/unity-workspace.png';
+import '../styles/studio.css';
+
+const process = [
+  { title: 'Prototype', text: 'Every idea becomes something playable fast, so we find the fun before anything else.' },
+  { title: 'Design', text: 'Characters, worlds and systems are shaped together, so the art and the gameplay tell the same story.' },
+  { title: 'Build', text: 'Characters are modelled and textured in Blender, then brought to life in Unity through a pipeline built for a small, fast team.' },
+  { title: 'Polish', text: 'Feel, readability and performance are tuned until every match plays beautifully on a phone.' },
+];
+const tools = ['Unity', 'Blender'];
+---
+<section class="studio" id="studio" aria-labelledby="studio-title">
+  <div class="wrap studio-head">
+    <h2 id="studio-title">Every game starts in the lab.</h2>
+    <div class="studio-intro">
+      <p class="lead">Loot Lab Studios is an independent game studio crafting stylized strategy games with personality and depth.</p>
+      <p>We keep the team small and the standards high. Every character, map and mechanic is made in-house, tested early and refined until it feels right in your hands.</p>
+    </div>
+  </div>
+
+  <figure class="studio-shot" data-reveal>
+    <Image src={workspace} alt="A developer building a stylized island scene in Unity, with toon character figurines and sketchbooks on the desk" widths={[768, 1152, 1536]} sizes="100vw" loading="lazy" />
+    <figcaption>Prototyping a new world in Unity</figcaption>
+  </figure>
+
+  <div class="wrap">
+    <ol class="process" aria-label="How we work">
+      {process.map((p, i) => (
+        <li><span class="num">{String(i + 1).padStart(2, '0')}</span><h3>{p.title}</h3><p>{p.text}</p></li>
+      ))}
+    </ol>
+    <div class="studio-foot">
+      <blockquote>Big ideas, small team.</blockquote>
+      <div class="toolbox">
+        <span class="toolbox-label">Built with</span>
+        <ul>{tools.map((t) => <li>{t}</li>)}</ul>
+      </div>
+    </div>
+  </div>
+</section>

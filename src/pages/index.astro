@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Intro from '../components/Intro.astro';
+import FeaturedGame from '../components/FeaturedGame.astro';
+import Studio from '../components/Studio.astro';
+import Contact from '../components/Contact.astro';
+import MediaDialogs from '../components/MediaDialogs.astro';
+import { featuredGame } from '../data/games.js';
+---
+<BaseLayout overIntro>
+  <Intro />
+  <FeaturedGame game={featuredGame} />
+  <Studio />
+  <Contact />
+  <MediaDialogs slot="dialogs" game={featuredGame} />
+</BaseLayout>

@@ -1,0 +1,20 @@
+---
+import { Image } from 'astro:assets';
+import badge from '../assets/brand/lootlab-logo.png';
+
+interface Props {
+  // Transparent until the homepage intro has scrolled away.
+  overIntro?: boolean;
+}
+const { overIntro = false } = Astro.props;
+---
+<header class:list={['top', { solid: !overIntro }]}>
+  <div class="wrap">
+    <a class="brand" href="/"><Image src={badge} alt="Loot Lab Studios home" width={92} loading="eager" /></a>
+    <nav aria-label="Main">
+      <a href="/#games">Games</a>
+      <a href="/#studio">Studio</a>
+      <a href="/#contact">Contact</a>
+    </nav>
+  </div>
+</header>

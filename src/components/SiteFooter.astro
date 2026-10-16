@@ -1,0 +1,10 @@
+---
+import { site } from '../data/site.js';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="wrap">
+    <span>&copy; {year} {site.name}</span>
+    <a href={`mailto:${site.email}`}>{site.email}</a>
+  </div>
+</footer>

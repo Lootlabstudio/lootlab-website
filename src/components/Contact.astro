@@ -1,0 +1,47 @@
+---
+import { Image } from 'astro:assets';
+import badge from '../assets/brand/lootlab-logo.png';
+import { site } from '../data/site.js';
+import '../styles/contact.css';
+
+const topics = [
+  { value: 'press', label: 'Press' },
+  { value: 'partnership', label: 'Partnership' },
+  { value: 'playtesting', label: 'Playtesting' },
+  { value: 'other', label: 'Something else' },
+];
+---
+<section class="contact" id="contact" aria-labelledby="contact-title">
+  <div class="contact-sky" aria-hidden="true"></div>
+  <div class="wrap grid">
+    <div class="hello">
+      <Image class="hello-badge" src={badge} alt="" width={168} loading="lazy" />
+      <h2 id="contact-title">Say hello.</h2>
+      <p>Press, partnerships, playtesting or just a good idea: we read everything.</p>
+      <div class="mail-pill">
+        <a href={`mailto:${site.email}`}>{site.email}</a>
+        <button type="button" data-copy={site.email}>Copy</button>
+      </div>
+      {site.socials.length > 0 && (
+        <ul class="socials" aria-label="Social links">
+          {site.socials.map((s) => <li><a href={s.href} rel="me noopener" target="_blank">{s.label}</a></li>)}
+        </ul>
+      )}
+    </div>
+    <form class="glass" data-mailto={site.email}>
+      <fieldset class="topics">
+        <legend>What&rsquo;s it about?</legend>
+        {topics.map((t, i) => (
+          <label><input type="radio" name="topic" value={t.value} checked={i === 0}><span>{t.label}</span></label>
+        ))}
+      </fieldset>
+      <div class="row">
+        <label class="field">Name<input name="name" autocomplete="name" required></label>
+        <label class="field">Email<input name="email" type="email" autocomplete="email" required></label>
+      </div>
+      <label class="field">Message<textarea name="message" rows="5" required></textarea></label>
+      <button class="btn btn-gold send" type="submit">Send message</button>
+      <p data-status role="status"></p>
+    </form>
+  </div>
+</section>
