@@ -345,9 +345,12 @@ function drawKnock(z, time, wipe) {
 /* ---------------- Loop ---------------- */
 let sp = 0;
 const statEls = { tris: $('sTris'), ents: $('sEnt'), lights: $('sLights'), build: $('sBuild') };
+// The finished world and its closing caption stay pinned for this many extra
+// screen heights, so visitors don't scroll straight past the call to action.
+const HOLD = 1.2;
 function progress() {
   const r = intro.getBoundingClientRect();
-  return clamp(-r.top / (intro.offsetHeight - innerHeight));
+  return clamp(-r.top / (intro.offsetHeight - innerHeight * (1 + HOLD)));
 }
 const clock = new THREE.Clock();
 function frame() {
