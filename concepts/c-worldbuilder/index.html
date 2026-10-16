@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Concept C: Worldbuilder | Loot Lab Studios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400..700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0e1730;
+    --dusk: #1d2a52;
+    --ember: #ffb35c;
+    --text: #f3f0fa;
+    --muted: #aab1cc;
+    --line: rgba(243, 240, 250, 0.14);
+    --wrap: min(1240px, 100% - 48px);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  dialog { margin: auto; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--night); color: var(--text); font: 400 17px/1.65 Figtree, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  img, video { display: block; max-width: 100%; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; border-radius: 4px; }
+  .wrap { width: var(--wrap); margin-inline: auto; }
+  h1, h2 { font-family: "Young Serif", Georgia, serif; font-weight: 400; letter-spacing: -0.01em; line-height: 1.02; }
+  h2 { font-size: clamp(38px, 4.8vw, 66px); }
+
+  .concept-tag { position: fixed; z-index: 50; right: 12px; bottom: 12px; background: var(--ember); color: #2b1600; font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 6px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 24px; border-radius: 999px; font: 600 16px/1 Figtree, sans-serif; text-decoration: none; cursor: pointer; white-space: nowrap; border: 1px solid transparent; transition: background .2s, transform .15s; }
+  .btn:active { transform: scale(.97); }
+  .btn-ember { background: var(--ember); color: #2b1600; }
+  .btn-ember:hover { background: #ffc47e; }
+  .btn-line { border-color: rgba(243,240,250,.35); color: var(--text); background: rgba(14,23,48,.25); backdrop-filter: blur(6px); }
+  .btn-line:hover { background: rgba(243,240,250,.1); }
+  .btn svg { width: 16px; height: 16px; }
+
+  /* Header */
+  .top { position: absolute; inset: 0 0 auto; z-index: 5; }
+  .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 88px; }
+  .top img { width: 54px; }
+  .top nav { display: flex; gap: 30px; font-weight: 500; }
+  .top nav a { text-decoration: none; opacity: .85; }
+  .top nav a:hover { opacity: 1; }
+
+  /* Hero: full-bleed world */
+  .hero { position: relative; min-height: 100svh; display: grid; align-items: end; overflow: hidden; }
+  .hero > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 18%; transform-origin: 50% 30%; animation: settle 2.6s cubic-bezier(.2,.7,.2,1) both; }
+  .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(14,23,48,.9) 0%, rgba(14,23,48,.6) 40%, transparent 70%), linear-gradient(180deg, rgba(14,23,48,.55) 0%, rgba(14,23,48,0) 28%, rgba(14,23,48,.25) 52%, rgba(14,23,48,.92) 80%, var(--night) 100%); }
+  @keyframes settle { from { transform: scale(1.08); filter: brightness(.6); } to { transform: none; filter: none; } }
+  .hero .wrap { position: relative; z-index: 1; padding-bottom: 96px; }
+  .hero h1 { font-size: clamp(54px, 8.4vw, 128px); max-width: 11ch; text-shadow: 0 4px 30px rgba(14,23,48,.5); animation: up 1.2s .5s cubic-bezier(.2,.7,.2,1) both; }
+  .hero p { margin-top: 24px; max-width: 44ch; font-size: 20px; color: #dcdcef; animation: up 1.2s .7s cubic-bezier(.2,.7,.2,1) both; }
+  .hero .actions { display: flex; gap: 14px; margin-top: 36px; flex-wrap: wrap; animation: up 1.2s .85s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes up { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+  .credit { position: absolute; right: 24px; bottom: 24px; z-index: 1; font-size: 13px; color: var(--muted); }
+
+  /* Featured: filmstrip */
+  .world { padding-block: 120px 140px; overflow-x: clip; }
+  .world .wrap { display: grid; grid-template-columns: 380px 1fr; gap: 56px; align-items: start; }
+  .world .intro { position: sticky; top: 40px; }
+  .world .intro p.eyebrow { color: var(--ember); font-family: "Young Serif", serif; font-size: 22px; }
+  .world .tt-logo { width: 100%; max-width: 360px; margin-top: 18px; }
+  .world .intro p.desc { margin-top: 24px; color: var(--muted); font-size: 18px; }
+  .world .facts { margin-top: 28px; border-top: 1px solid var(--line); }
+  .world .facts div { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .world .facts dt { color: var(--muted); }
+  .world .actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 32px; }
+  .strip { min-width: 0; margin-right: calc((100vw - var(--wrap)) / -2); }
+  .strip .track { display: grid; grid-auto-flow: column; grid-auto-columns: clamp(240px, 26vw, 360px); gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 0 24px 20px 0; scrollbar-width: none; }
+  .strip .track::-webkit-scrollbar { display: none; }
+  .frame { position: relative; scroll-snap-align: start; aspect-ratio: 9 / 16; border-radius: 22px; overflow: hidden; background: var(--dusk); }
+  .frame img, .frame video { width: 100%; height: 100%; object-fit: cover; }
+  .frame figcaption { position: absolute; inset: auto 0 0; padding: 40px 18px 16px; background: linear-gradient(transparent, rgba(14,23,48,.9)); font-size: 15px; }
+  .frame .play { position: absolute; inset: 0; margin: auto; width: 76px; height: 76px; border-radius: 50%; border: 0; background: rgba(255,179,92,.95); color: #2b1600; cursor: pointer; display: grid; place-items: center; transition: transform .2s; }
+  .frame .play:hover { transform: scale(1.06); }
+  .frame .play svg { width: 26px; height: 26px; margin-left: 4px; }
+  .ph { display: grid; place-items: center; text-align: center; padding: 18px; border: 2px dashed rgba(255,179,92,.6); background: var(--dusk); color: var(--ember); font-size: 14px; font-weight: 600; line-height: 1.4; }
+  .strip .controls { display: flex; gap: 10px; margin-top: 8px; }
+  .icon-btn { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--text); font-size: 18px; cursor: pointer; }
+  .icon-btn:hover { background: rgba(243,240,250,.08); }
+
+  /* About: full-bleed studio image */
+  .studio { position: relative; min-height: 88vh; display: grid; align-items: center; overflow: hidden; }
+  .studio > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 65% center; }
+  .studio::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, var(--night) 0%, rgba(14,23,48,.92) 32%, rgba(14,23,48,.35) 62%, rgba(14,23,48,.1) 100%), linear-gradient(180deg, var(--night), transparent 18%, transparent 82%, var(--night)); }
+  .studio .wrap { position: relative; z-index: 2; padding-block: 120px; }
+  .studio .copy { max-width: 520px; }
+  .studio p { margin-top: 22px; color: #d3d5e6; font-size: 18px; }
+  .studio blockquote { margin-top: 36px; padding-left: 20px; border-left: 2px solid var(--ember); font-family: "Young Serif", serif; font-size: 22px; line-height: 1.4; }
+
+  /* Games */
+  .games { padding-block: 130px; }
+  .games header { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 44px; }
+  .games header p { color: var(--muted); max-width: 36ch; }
+  .shelf { display: grid; gap: 20px; }
+  .title-row { position: relative; display: grid; grid-template-columns: 1.4fr 1fr; height: 460px; border-radius: 26px; overflow: hidden; background: var(--dusk); text-decoration: none; isolation: isolate; }
+  .title-row > img { width: 100%; height: 100%; object-fit: cover; object-position: center 34%; transition: transform .6s cubic-bezier(.2,.7,.2,1); }
+  .title-row:hover > img { transform: scale(1.03); }
+  .title-row .info { display: flex; flex-direction: column; justify-content: center; padding: 40px; }
+  .title-row .info img { width: min(320px, 100%); }
+  .title-row .info p { margin-top: 18px; color: var(--muted); }
+  .title-row .info .status { margin-top: 22px; color: var(--ember); font-weight: 600; }
+
+  /* Contact */
+  .contact { padding-block: 120px 140px; border-top: 1px solid var(--line); text-align: center; }
+  .contact > .wrap > p { margin: 20px auto 0; max-width: 46ch; color: var(--muted); }
+  .contact .mail { display: inline-block; margin-top: 24px; font-family: "Young Serif", serif; font-size: clamp(26px, 3.2vw, 40px); color: var(--ember); text-underline-offset: 8px; text-decoration-thickness: 1px; }
+  .socials { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .socials span { border: 2px dashed rgba(255,179,92,.6); color: var(--ember); padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+  form { max-width: 640px; margin: 56px auto 0; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: left; }
+  form .full { grid-column: 1 / -1; }
+  label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; color: var(--muted); }
+  input, textarea { font: inherit; color: var(--text); background: transparent; border: 0; border-bottom: 1px solid rgba(243,240,250,.3); padding: 10px 2px; }
+  input:focus, textarea:focus { outline: none; border-bottom-color: var(--ember); }
+  form .submit { grid-column: 1 / -1; display: flex; align-items: center; gap: 18px; margin-top: 10px; }
+  [data-status] { font-size: 14px; color: var(--ember); }
+
+  footer { border-top: 1px solid var(--line); padding-block: 30px; color: var(--muted); font-size: 14px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  dialog.trailer { padding: 0; border: 0; background: transparent; overflow: visible; }
+  dialog.trailer::backdrop { background: rgba(8,12,26,.92); }
+  dialog.trailer video { height: min(86vh, 900px); aspect-ratio: 9 / 16; border-radius: 18px; }
+  dialog.trailer button { position: absolute; top: 0; right: -60px; }
+
+  @media (max-width: 900px) {
+    .top nav { display: none; }
+    .hero > img { object-position: center 12%; }
+    .hero .wrap { padding-bottom: 72px; }
+    .hero p { font-size: 18px; }
+    .credit { display: none; }
+    .world { padding-block: 88px; }
+    .world .wrap { grid-template-columns: 1fr; gap: 40px; }
+    .world .intro { position: static; }
+    .world .tt-logo { max-width: 280px; }
+    .strip { margin-right: -24px; }
+    .strip .track { grid-auto-columns: 70%; }
+    .studio { min-height: auto; display: block; }
+    .studio > img { position: relative; height: 300px; object-position: 40% center; }
+    .studio::before { background: linear-gradient(180deg, var(--night) 0%, transparent 15%, transparent 30%, var(--night) 48%); }
+    .studio .wrap { padding-block: 0 88px; margin-top: -40px; }
+    .games { padding-block: 88px; }
+    .games header { flex-direction: column; align-items: start; }
+    .title-row { grid-template-columns: 1fr; height: auto; }
+    .title-row > img { aspect-ratio: 4 / 3; }
+    .title-row .info { padding: 24px; }
+    .contact { padding-block: 88px; }
+    form { grid-template-columns: 1fr; }
+    dialog.trailer button { right: 8px; top: 8px; }
+    dialog.trailer video { height: auto; width: 92vw; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="concept-tag">Concept C: Worldbuilder</div>
+
+<header class="top">
+  <div class="wrap">
+    <a href="#"><img src="../assets/lootlab-badge.webp" alt="Loot Lab Studios home"></a>
+    <nav aria-label="Main"><a href="#games">Games</a><a href="#studio">Studio</a><a href="#contact">Contact</a></nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <img src="../assets/tt-arena.webp" alt="" fetchpriority="high">
+    <div class="wrap">
+      <h1>We build worlds made for playing.</h1>
+      <p>Loot Lab Studios is an independent game studio crafting stylized strategy games full of color, character and clever decisions.</p>
+      <div class="actions">
+        <a class="btn btn-ember" href="#games">Explore our games</a>
+        <a class="btn btn-line" href="#studio">Meet the studio</a>
+      </div>
+    </div>
+    <span class="credit">Toon Tactics arena</span>
+  </section>
+
+  <section class="world" id="games" aria-labelledby="tt-title">
+    <div class="wrap">
+      <div class="intro">
+        <p class="eyebrow">Our first world</p>
+        <h2 id="tt-title"><img class="tt-logo" src="../assets/tt-logo.webp" alt="Toon Tactics"></h2>
+        <p class="desc">A stylized mobile strategy game inspired by auto-battlers and tactics classics. Gather a squad of toon heroes, set your formation, and take on battles that grow from skirmishes to legendary showdowns.</p>
+        <dl class="facts">
+          <div><dt>Genre</dt><dd>Auto-battler strategy</dd></div>
+          <div><dt>Platform</dt><dd>Mobile</dd></div>
+          <div><dt>Status</dt><dd>In development</dd></div>
+        </dl>
+        <div class="actions">
+          <a class="btn btn-ember" href="#">Explore Toon Tactics</a>
+        </div>
+      </div>
+
+      <div class="strip" data-gallery>
+        <div class="track" data-track>
+          <figure class="frame">
+            <video data-loop src="../assets/tt-trailer-loop.mp4" poster="../assets/tt-trailer-poster.webp" muted loop playsinline autoplay aria-label="Toon Tactics trailer, muted preview"></video>
+            <button class="play" data-open-trailer aria-label="Play the trailer with sound"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg></button>
+            <figcaption>Trailer</figcaption>
+          </figure>
+          <figure class="frame">
+            <img src="../assets/tt-splash.webp" alt="Toon Tactics splash art: toon heroes charge across a castle battlefield" loading="lazy">
+            <figcaption>Splash art</figcaption>
+          </figure>
+          <div class="frame ph">Placeholder: gameplay screenshot 1</div>
+          <div class="frame ph">Placeholder: gameplay screenshot 2</div>
+          <div class="frame ph">Placeholder: character art</div>
+          <div class="frame ph">Placeholder: environment art</div>
+        </div>
+        <div class="controls"><button class="icon-btn" data-prev aria-label="Previous">&#8592;</button><button class="icon-btn" data-next aria-label="Next">&#8594;</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="studio" id="studio" aria-labelledby="about-title">
+    <img src="../assets/studio-unity.webp" alt="A developer building a stylized island scene in Unity, with toon character figurines and sketchbooks on the desk" loading="lazy">
+    <div class="wrap">
+      <div class="copy">
+        <h2 id="about-title">Every world starts on a sketchpad.</h2>
+        <p>Loot Lab Studios is an independent game studio. We sketch, prototype and play our ideas in-engine early, then keep refining until every character, map and match feels hand-made.</p>
+        <p>We care about games that are easy to read, rich to master, and charming enough that you want to come back to them.</p>
+        <blockquote>Where imagination becomes playable.</blockquote>
+      </div>
+    </div>
+  </section>
+
+  <section class="games" aria-labelledby="games-title">
+    <div class="wrap">
+      <header>
+        <h2 id="games-title">Our games</h2>
+        <p>New worlds join this shelf as they're announced.</p>
+      </header>
+      <div class="shelf">
+        <a class="title-row" href="#">
+          <img src="../assets/tt-splash.webp" alt="" loading="lazy">
+          <div class="info">
+            <img src="../assets/tt-logo.webp" alt="Toon Tactics" loading="lazy">
+            <p>Tactical auto-battler for mobile with collectible toon heroes.</p>
+            <span class="status">In development</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact" aria-labelledby="contact-title">
+    <div class="wrap">
+      <h2 id="contact-title">Let's talk.</h2>
+      <p>Press, partnerships, playtesting or a hello from a fellow developer: send us a note.</p>
+      <a class="mail" href="mailto:hello@lootlab.io">hello@lootlab.io</a>
+      <div class="socials" aria-label="Social links"><span>Placeholder: social link</span><span>Placeholder: social link</span><span>Placeholder: Discord</span></div>
+      <form data-concept>
+        <label>Name<input name="name" autocomplete="name" required></label>
+        <label>Email<input name="email" type="email" autocomplete="email" required></label>
+        <label class="full">Message<textarea name="message" rows="4" required></textarea></label>
+        <div class="submit"><button class="btn btn-ember" type="submit">Send message</button><p data-status role="status"></p></div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>&copy; 2026 Loot Lab Studios</span><span>Privacy policy &nbsp; Terms</span></div></footer>
+
+<dialog class="trailer" aria-label="Toon Tactics trailer">
+  <video src="../assets/tt-trailer.mp4" poster="../assets/tt-trailer-poster.webp" controls playsinline preload="none"></video>
+  <button class="icon-btn" data-close aria-label="Close trailer">&#10005;</button>
+</dialog>
+<script src="../shared.js"></script>
+</body>
+</html>

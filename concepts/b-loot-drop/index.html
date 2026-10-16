@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Concept B: Loot Drop | Loot Lab Studios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky: #d7e9fc;
+    --cloud: #f5faff;
+    --navy: #13234a;
+    --royal: #2557d6;
+    --royal-deep: #1a3f9f;
+    --gold: #ffc83d;
+    --teal: #2ed3bb;
+    --muted: #4a5a7d;
+    --wrap: min(1200px, 100% - 40px);
+    --edge: 3px solid var(--navy);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  dialog { margin: auto; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--sky); color: var(--navy); font: 400 17px/1.6 "Bricolage Grotesque", system-ui, sans-serif; font-variation-settings: "opsz" 14; -webkit-font-smoothing: antialiased; }
+  img, video { display: block; max-width: 100%; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--royal); outline-offset: 3px; border-radius: 6px; }
+  .wrap { width: var(--wrap); margin-inline: auto; }
+  h1, h2, h3 { font-variation-settings: "opsz" 96; font-weight: 800; letter-spacing: -0.025em; line-height: .95; }
+  h2 { font-size: clamp(38px, 5vw, 68px); }
+
+  .concept-tag { position: fixed; z-index: 50; right: 12px; bottom: 12px; background: var(--navy); color: #fff; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 6px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 10px; height: 54px; padding: 0 26px; border: var(--edge); border-radius: 16px; font-family: inherit; font-weight: 700; font-size: 17px; line-height: 1; text-decoration: none; cursor: pointer; white-space: nowrap; box-shadow: 0 5px 0 var(--navy); transition: transform .08s, box-shadow .08s; }
+  .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--navy); }
+  .btn-gold { background: var(--gold); color: var(--navy); }
+  .btn-white { background: #fff; color: var(--navy); }
+  .btn svg { width: 16px; height: 16px; }
+
+  /* Header */
+  .top .wrap { display: flex; justify-content: space-between; align-items: center; height: 80px; }
+  .wordmark { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; text-decoration: none; }
+  .wordmark span { display: grid; place-items: center; width: 40px; height: 40px; background: var(--navy); border-radius: 10px; }
+  .wordmark img { width: 30px; }
+  .top nav { display: flex; gap: 6px; }
+  .top nav a { text-decoration: none; font-weight: 600; padding: 8px 14px; border-radius: 10px; }
+  .top nav a:hover { background: rgba(255,255,255,.6); }
+
+  /* Hero */
+  .hero { position: relative; overflow: hidden; padding-block: 56px 120px; }
+  .cloud { position: absolute; background: var(--cloud); border-radius: 999px; }
+  .cloud::before, .cloud::after { content: ""; position: absolute; background: inherit; border-radius: 50%; }
+  .cloud.c1 { width: 260px; height: 70px; left: -40px; top: 120px; }
+  .cloud.c1::before { width: 120px; height: 120px; left: 50px; top: -60px; }
+  .cloud.c1::after { width: 90px; height: 90px; left: 140px; top: -40px; }
+  .cloud.c2 { width: 320px; height: 80px; right: -60px; top: 380px; }
+  .cloud.c2::before { width: 150px; height: 150px; left: 70px; top: -80px; }
+  .cloud.c2::after { width: 100px; height: 100px; left: 190px; top: -46px; }
+  .hero .wrap { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 64px; align-items: center; }
+  .crate { width: clamp(220px, 26vw, 340px); aspect-ratio: 1; display: grid; place-items: center; background: var(--navy); border-radius: 36px; rotate: -4deg; box-shadow: 0 12px 0 var(--royal-deep); animation: drop .9s cubic-bezier(.3,1.5,.5,1) both; }
+  .crate img { width: 74%; }
+  @keyframes drop { from { transform: translateY(-60px) rotate(-10deg); opacity: 0; } to { transform: none; opacity: 1; } }
+  .hero h1 { font-size: clamp(52px, 7.6vw, 116px); max-width: 9ch; }
+  .hero p { margin-top: 28px; max-width: 38ch; font-size: 20px; color: var(--muted); }
+  .hero .actions { display: flex; gap: 16px; margin-top: 36px; flex-wrap: wrap; }
+
+  /* Featured: Toon Tactics card hand */
+  .featured { background: var(--royal); color: #fff; border-block: var(--edge); padding-block: 110px 120px; overflow: hidden; }
+  .featured .head { text-align: center; }
+  .featured .kicker { display: inline-block; background: var(--gold); color: var(--navy); font-weight: 700; font-size: 15px; padding: 6px 14px; border-radius: 10px; border: var(--edge); rotate: -2deg; }
+  .featured .tt-logo { width: min(520px, 90%); margin: 24px auto 0; filter: drop-shadow(0 10px 0 rgba(19,35,74,.35)); }
+  .hand { position: relative; height: clamp(440px, 52vw, 640px); margin-top: 48px; display: grid; place-items: center; }
+  .hand button.card { position: absolute; width: clamp(220px, 24vw, 320px); aspect-ratio: 9 / 16; padding: 0; border: 4px solid var(--navy); border-radius: 26px; overflow: hidden; background: var(--navy); cursor: pointer; box-shadow: 0 10px 0 var(--navy); transition: transform .45s cubic-bezier(.3,1.3,.5,1), z-index 0s .1s; }
+  .hand button.card img, .hand button.card video { width: 100%; height: 100%; object-fit: cover; }
+  .hand button.card[data-pos="left"] { transform: translateX(-72%) rotate(-9deg) scale(.88); z-index: 1; }
+  .hand button.card[data-pos="right"] { transform: translateX(72%) rotate(9deg) scale(.88); z-index: 1; }
+  .hand button.card[data-pos="center"] { transform: translateY(-10px); z-index: 3; }
+  .hand button.card[data-pos="left"]:hover { transform: translateX(-76%) rotate(-11deg) scale(.9); }
+  .hand button.card[data-pos="right"]:hover { transform: translateX(76%) rotate(11deg) scale(.9); }
+  .hand .label { position: absolute; left: 12px; bottom: 12px; background: #fff; color: var(--navy); font-family: inherit; font-weight: 700; font-size: 13px; line-height: 1; padding: 8px 10px; border-radius: 10px; border: 2px solid var(--navy); }
+  .hand-hint { text-align: center; margin-top: 18px; font-size: 15px; opacity: .85; }
+  .featured .body { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; margin-top: 72px; align-items: start; }
+  .featured .body p { font-size: 20px; max-width: 42ch; }
+  .featured .actions { display: flex; gap: 16px; margin-top: 32px; flex-wrap: wrap; }
+  .abilities { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; list-style: none; padding: 0; }
+  .abilities li { background: #fff; color: var(--navy); border: var(--edge); border-radius: 18px; padding: 16px 18px; box-shadow: 0 5px 0 var(--navy); }
+  .abilities strong { display: block; font-size: 19px; font-weight: 800; }
+  .abilities span { font-size: 14px; color: var(--muted); }
+  .shots { margin-top: 72px; display: grid; grid-auto-flow: column; grid-auto-columns: clamp(160px, 18vw, 220px); gap: 16px; overflow-x: auto; padding: 4px 4px 16px; scroll-snap-type: x mandatory; }
+  .shots > * { scroll-snap-align: start; aspect-ratio: 9 / 16; border-radius: 20px; }
+  .ph { display: grid; place-items: center; text-align: center; padding: 16px; border: 3px dashed var(--gold); background: var(--royal-deep); color: var(--gold); font-size: 13px; font-weight: 700; line-height: 1.35; }
+
+  /* About */
+  .about { background: var(--cloud); padding-block: 120px; border-bottom: var(--edge); }
+  .about .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center; }
+  .about figure { background: #fff; padding: 14px 14px 18px; border: var(--edge); border-radius: 24px; rotate: -2deg; box-shadow: 0 10px 0 var(--navy); }
+  .about figure img { border-radius: 14px; aspect-ratio: 4 / 3; object-fit: cover; }
+  .about figcaption { margin-top: 12px; font-weight: 600; font-size: 15px; text-align: center; }
+  .about p { margin-top: 22px; font-size: 18px; color: var(--muted); max-width: 46ch; }
+  .about p.big { color: var(--navy); font-size: 21px; }
+
+  /* Games */
+  .games { padding-block: 120px; }
+  .games .wrap { display: grid; grid-template-columns: 1fr 2fr; gap: 56px; align-items: start; }
+  .games .intro p { margin-top: 20px; color: var(--muted); max-width: 32ch; }
+  .collection { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
+  .collectible { display: block; text-decoration: none; background: var(--gold); border: var(--edge); border-radius: 26px; padding: 10px; box-shadow: 0 8px 0 var(--navy); transition: transform .2s; }
+  .collectible:hover { transform: translateY(-4px) rotate(-1deg); }
+  .collectible .art { position: relative; border-radius: 18px; overflow: hidden; border: var(--edge); aspect-ratio: 3 / 4; }
+  .collectible .art img.bg { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+  .collectible .art img.logo { position: absolute; left: 50%; bottom: 10px; translate: -50% 0; width: 82%; }
+  .collectible .meta { display: flex; justify-content: space-between; align-items: center; padding: 12px 6px 4px; font-weight: 700; font-size: 14px; }
+  .collectible .meta span:last-child { background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 8px; }
+
+  /* Contact */
+  .contact { background: var(--navy); color: #fff; padding-block: 120px; }
+  .contact .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+  .contact p { margin-top: 20px; opacity: .8; max-width: 38ch; }
+  .contact .mail { display: inline-block; margin-top: 28px; font-weight: 800; font-size: clamp(26px, 3vw, 38px); color: var(--gold); text-underline-offset: 6px; }
+  .socials { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .socials span { border: 2px dashed var(--gold); color: var(--gold); padding: 8px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; }
+  form { background: #fff; color: var(--navy); border: var(--edge); border-radius: 28px; padding: 28px; display: grid; gap: 16px; box-shadow: 0 10px 0 var(--royal); }
+  label { display: grid; gap: 6px; font-weight: 700; font-size: 15px; }
+  input, textarea { font: inherit; border: var(--edge); border-radius: 14px; padding: 12px 14px; background: var(--cloud); color: var(--navy); }
+  input:focus, textarea:focus { outline: none; background: #fff; border-color: var(--royal); }
+  [data-status] { min-height: 1.4em; font-size: 14px; color: var(--royal); font-weight: 600; }
+
+  footer { background: var(--navy); color: rgba(255,255,255,.7); border-top: 1px solid rgba(255,255,255,.12); padding-block: 28px; font-size: 14px; }
+  footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+  dialog.trailer { padding: 0; border: 4px solid var(--navy); border-radius: 26px; background: var(--navy); overflow: visible; }
+  dialog.trailer::backdrop { background: rgba(19,35,74,.85); }
+  dialog.trailer video { height: min(84vh, 880px); aspect-ratio: 9 / 16; border-radius: 22px; }
+  dialog.trailer button { position: absolute; top: -18px; right: -18px; width: 44px; height: 44px; border-radius: 50%; border: var(--edge); background: var(--gold); font-size: 18px; cursor: pointer; }
+
+  @media (max-width: 900px) {
+    .top nav { display: none; }
+    .hero { padding-block: 24px 88px; }
+    .hero .wrap { grid-template-columns: 1fr; gap: 36px; }
+    .crate { width: 168px; border-radius: 28px; }
+    .hero p { font-size: 18px; }
+    .featured { padding-block: 80px 88px; }
+    .hand { height: 470px; margin-top: 32px; }
+    .hand button.card { width: 220px; }
+    .hand button.card[data-pos="left"] { transform: translateX(-46%) rotate(-8deg) scale(.82); }
+    .hand button.card[data-pos="right"] { transform: translateX(46%) rotate(8deg) scale(.82); }
+    .featured .body, .about .wrap, .games .wrap, .contact .wrap { grid-template-columns: 1fr; gap: 40px; }
+    .featured .body { margin-top: 48px; }
+    .featured .body p { font-size: 18px; }
+    .shots { margin-top: 48px; grid-auto-columns: 46%; }
+    .about, .games, .contact { padding-block: 88px; }
+    .collection { grid-template-columns: 1fr; }
+    form { padding: 20px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="concept-tag">Concept B: Loot Drop</div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="wordmark" href="#"><span><img src="../assets/lootlab-badge.webp" alt=""></span>Loot Lab Studios</a>
+    <nav aria-label="Main"><a href="#games">Games</a><a href="#studio">Studio</a><a href="#contact">Contact</a></nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="cloud c1" aria-hidden="true"></div>
+    <div class="cloud c2" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="crate"><img src="../assets/lootlab-badge.webp" alt="Loot Lab Game Studio badge"></div>
+      <div>
+        <h1>We craft games worth opening.</h1>
+        <p>Loot Lab Studios is an independent game studio making colorful, strategic games packed with characters you'll want to collect.</p>
+        <div class="actions">
+          <a class="btn btn-gold" href="#games">Explore our games</a>
+          <a class="btn btn-white" href="#studio">About the studio</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="featured" id="games" aria-labelledby="tt-title">
+    <div class="wrap">
+      <div class="head">
+        <span class="kicker">Now in development</span>
+        <h2 id="tt-title"><img class="tt-logo" src="../assets/tt-logo.webp" alt="Toon Tactics"></h2>
+      </div>
+
+      <div class="hand" data-hand>
+        <button class="card" data-pos="left" aria-label="Show splash art">
+          <img src="../assets/tt-splash.webp" alt="Toon Tactics splash art: toon heroes charge across a castle battlefield">
+          <span class="label">Splash art</span>
+        </button>
+        <button class="card" data-pos="center" aria-label="Play the trailer with sound" data-trailer-card>
+          <video data-loop src="../assets/tt-trailer-loop.mp4" poster="../assets/tt-trailer-poster.webp" muted loop playsinline autoplay></video>
+          <span class="label">&#9654; Trailer</span>
+        </button>
+        <button class="card" data-pos="right" aria-label="Show screenshot slot">
+          <div class="ph" style="height:100%;border:0;border-radius:0">Placeholder: gameplay screenshot</div>
+          <span class="label">Gameplay</span>
+        </button>
+      </div>
+      <p class="hand-hint">Tap a card to bring it forward. Tap the trailer to play it with sound.</p>
+
+      <div class="body">
+        <div>
+          <p>A stylized mobile strategy game inspired by auto-battlers and tactics classics. Build a squad of toon heroes, place them on the board, and watch your strategy unfold.</p>
+          <div class="actions">
+            <a class="btn btn-gold" href="#">Explore Toon Tactics</a>
+            <button class="btn btn-white" data-open-trailer><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg>Watch the trailer</button>
+          </div>
+        </div>
+        <ul class="abilities">
+          <li><strong>Auto chess</strong><span>Strategy meets luck</span></li>
+          <li><strong>Collect</strong><span>Unlock unique heroes</span></li>
+          <li><strong>Upgrade</strong><span>Power up your team</span></li>
+          <li><strong>Battle</strong><span>Rise to the top</span></li>
+        </ul>
+      </div>
+
+      <div class="shots">
+        <div class="ph">Placeholder: gameplay screenshot 1</div>
+        <div class="ph">Placeholder: gameplay screenshot 2</div>
+        <div class="ph">Placeholder: gameplay screenshot 3</div>
+        <div class="ph">Placeholder: character art</div>
+        <div class="ph">Placeholder: environment art</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about" id="studio" aria-labelledby="about-title">
+    <div class="wrap">
+      <figure>
+        <img src="../assets/studio-unity.webp" alt="A developer building a stylized island scene in Unity, with toon character figurines on the desk" loading="lazy">
+        <figcaption>Where the loot gets made.</figcaption>
+      </figure>
+      <div>
+        <h2 id="about-title">Small team. Big toybox.</h2>
+        <p class="big">We're an independent studio that loves bright worlds, clever systems and characters with attitude.</p>
+        <p>Every game starts as a scrappy prototype on our desks. We play it, break it, and rebuild it until it's easy to learn, hard to put down, and polished down to the last sword swing.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="games" aria-labelledby="games-title">
+    <div class="wrap">
+      <div class="intro">
+        <h2 id="games-title">Our games</h2>
+        <p>Each Loot Lab game gets its own card here as it's announced.</p>
+      </div>
+      <div class="collection">
+        <a class="collectible" href="#">
+          <div class="art">
+            <img class="bg" src="../assets/tt-splash.webp" alt="" loading="lazy">
+            <img class="logo" src="../assets/tt-logo.webp" alt="Toon Tactics" loading="lazy">
+          </div>
+          <div class="meta"><span>Mobile strategy</span><span>In development</span></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact" aria-labelledby="contact-title">
+    <div class="wrap">
+      <div>
+        <h2 id="contact-title">Drop us a message.</h2>
+        <p>Press, partnerships, playtesting or fan mail: we'd love to hear from you.</p>
+        <a class="mail" href="mailto:hello@lootlab.io">hello@lootlab.io</a>
+        <div class="socials" aria-label="Social links"><span>Placeholder: social link</span><span>Placeholder: social link</span><span>Placeholder: Discord</span></div>
+      </div>
+      <form data-concept>
+        <label>Name<input name="name" autocomplete="name" required></label>
+        <label>Email<input name="email" type="email" autocomplete="email" required></label>
+        <label>Message<textarea name="message" rows="5" required></textarea></label>
+        <div><button class="btn btn-gold" type="submit">Send message</button></div>
+        <p data-status role="status"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>&copy; 2026 Loot Lab Studios</span><span>Privacy policy &nbsp; Terms</span></div></footer>
+
+<dialog class="trailer" aria-label="Toon Tactics trailer">
+  <video src="../assets/tt-trailer.mp4" poster="../assets/tt-trailer-poster.webp" controls playsinline preload="none"></video>
+  <button data-close aria-label="Close trailer">&#10005;</button>
+</dialog>
+<script src="../shared.js"></script>
+<script>
+  // Card hand: tapping a side card brings it to the centre; tapping the centred trailer opens the lightbox.
+  const hand = document.querySelector('[data-hand]');
+  hand.addEventListener('click', (e) => {
+    const card = e.target.closest('.card');
+    if (!card) return;
+    if (card.dataset.pos === 'center') {
+      if (card.hasAttribute('data-trailer-card')) document.querySelector('[data-open-trailer]').click();
+      return;
+    }
+    const center = hand.querySelector('[data-pos="center"]');
+    center.dataset.pos = card.dataset.pos;
+    card.dataset.pos = 'center';
+  });
+</script>
+</body>
+</html>

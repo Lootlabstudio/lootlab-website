@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Concept E: Grid to World | Loot Lab Studios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f1424;
+    --panel: #161d33;
+    --line: rgba(170, 186, 255, 0.14);
+    --text: #eef1fa;
+    --muted: #9aa3bf;
+    --teal: #3fe0c5;
+    --gold: #ffc83d;
+    --wrap: min(1240px, 100% - 48px);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  dialog { margin: auto; }
+  body { background: var(--ink); color: var(--text); font: 400 17px/1.6 Archivo, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  img, video, canvas { display: block; max-width: 100%; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 4px; }
+  .wrap { width: var(--wrap); margin-inline: auto; }
+  h2 { font-stretch: 112%; font-weight: 800; font-size: clamp(36px, 4.6vw, 64px); line-height: 1; letter-spacing: -0.015em; }
+
+  .concept-tag { position: fixed; z-index: 60; right: 12px; bottom: 12px; background: #fff; color: #111; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 6px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 24px; border-radius: 999px; font: 600 16px/1 Archivo, sans-serif; white-space: nowrap; text-decoration: none; cursor: pointer; border: 1px solid transparent; transition: transform .15s, background .2s; }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--text); color: var(--ink); }
+  .btn-primary:hover { background: #fff; }
+  .btn-ghost { border-color: rgba(238,241,250,.3); color: var(--text); background: rgba(15,20,36,.35); backdrop-filter: blur(8px); }
+  .btn-ghost:hover { background: rgba(255,255,255,.1); }
+  .btn-gold { background: var(--gold); color: #2a1d00; }
+
+  .top { position: fixed; inset: 0 0 auto; z-index: 40; transition: background .3s; }
+  .top.solid { background: rgba(15,20,36,.72); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+  .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 76px; }
+  .top img { width: 46px; }
+  .top nav { display: flex; gap: 28px; font-weight: 500; font-size: 15px; }
+  .top nav a { text-decoration: none; color: var(--muted); }
+  .top nav a:hover { color: var(--text); }
+
+  /* ---------- Scroll-driven intro ---------- */
+  .intro { position: relative; height: 640vh; }
+  .stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--ink); }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(10,14,26,.55) 100%), linear-gradient(180deg, transparent 60%, rgba(10,14,26,.7)); }
+  .hud { position: absolute; inset: auto 0 0; padding-bottom: 40px; pointer-events: none; }
+  .hud .wrap { display: flex; justify-content: space-between; align-items: end; gap: 24px; }
+  .hud p { max-width: 34ch; font-size: 19px; color: var(--muted); }
+  .hud p strong { color: var(--text); font-weight: 600; }
+  .hint { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; color: var(--muted); }
+  .hint i { position: relative; width: 1px; height: 44px; background: var(--line); overflow: hidden; }
+  .hint i::after { content: ""; position: absolute; left: 0; top: -40%; width: 1px; height: 40%; background: var(--teal); animation: drip 1.8s ease-in-out infinite; }
+  @keyframes drip { to { top: 100%; } }
+
+  /* Editor chrome that appears while the world is being built */
+  .editor { position: absolute; inset: 96px 0 auto; opacity: 0; pointer-events: none; }
+  .editor .wrap { display: flex; justify-content: space-between; align-items: start; gap: 16px; }
+  .panel { background: rgba(15,20,36,.62); backdrop-filter: blur(10px); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; font-size: 13px; min-width: 210px; }
+  .panel h4 { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+  .panel ol { list-style: none; padding: 0; display: grid; gap: 4px; }
+  .panel li { display: flex; gap: 10px; align-items: center; color: var(--muted); transition: color .2s; }
+  .panel li b { font-weight: 600; font-variant-numeric: tabular-nums; width: 18px; color: rgba(154,163,191,.6); }
+  .panel li.on { color: var(--text); }
+  .panel li.on b { color: var(--teal); }
+  .panel li.done { color: var(--text); opacity: .55; }
+  .stats { display: grid; grid-template-columns: auto auto; gap: 4px 18px; font-variant-numeric: tabular-nums; }
+  .stats dt { color: var(--muted); }
+  .stats dd { text-align: right; }
+  .cap { position: absolute; inset: auto 0 0; padding-bottom: 72px; opacity: 0; pointer-events: none; }
+  .cap.on { pointer-events: auto; }
+  .cap p.big { font-stretch: 118%; font-weight: 800; font-size: clamp(34px, 5vw, 76px); line-height: .98; letter-spacing: -0.015em; max-width: 15ch; text-shadow: 0 4px 30px rgba(10,14,26,.6); }
+  .cap .actions { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+  .meter { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--teal); transform-origin: left; transform: scaleX(0); }
+
+  /* ---------- Rest of the page ---------- */
+  .details { padding-block: 140px 120px; border-top: 1px solid var(--line); }
+  .details .grid { display: grid; grid-template-columns: 1fr minmax(300px, 380px); gap: 72px; align-items: center; }
+  .details .kicker { color: var(--gold); font-weight: 600; font-size: 15px; margin-bottom: 18px; }
+  .tilt { perspective: 900px; width: min(440px, 100%); }
+  .tilt img { transition: transform .2s ease-out; filter: drop-shadow(0 18px 40px rgba(0,0,0,.45)); }
+  .details p.desc { max-width: 46ch; margin-top: 28px; font-size: 19px; color: #dfe4f5; }
+  .loop { display: grid; grid-template-columns: repeat(4, auto); justify-content: start; gap: 10px 26px; margin-top: 30px; padding: 0; list-style: none; font-weight: 600; font-size: 15px; }
+  .loop li { display: flex; align-items: center; gap: 8px; }
+  .loop li::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--gold); transform: rotate(45deg); }
+  .details .actions { display: flex; gap: 14px; margin-top: 38px; flex-wrap: wrap; }
+  .phone { position: relative; aspect-ratio: 9 / 16; border-radius: 34px; padding: 10px; background: linear-gradient(160deg, #2a3457, #0c1020); box-shadow: 0 40px 100px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.08); }
+  .phone video { width: 100%; height: 100%; object-fit: cover; border-radius: 26px; }
+  .phone button { position: absolute; left: 50%; bottom: 28px; translate: -50% 0; }
+  .strip { margin-top: 110px; }
+  .strip header { display: flex; justify-content: space-between; align-items: end; margin-bottom: 20px; }
+  .strip h3 { font-size: 20px; font-weight: 700; }
+  .strip .nav { display: flex; gap: 8px; }
+  .icon-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--text); cursor: pointer; font-size: 16px; }
+  .icon-btn:hover { background: rgba(255,255,255,.08); }
+  .track { display: grid; grid-auto-flow: column; grid-auto-columns: clamp(220px, 24vw, 320px); gap: 18px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 14px; scrollbar-width: none; }
+  .track::-webkit-scrollbar { display: none; }
+  .frame { position: relative; scroll-snap-align: start; aspect-ratio: 9 / 16; border-radius: 20px; overflow: hidden; background: var(--panel); }
+  .frame img { width: 100%; height: 100%; object-fit: cover; }
+  .frame figcaption { position: absolute; inset: auto 0 0; padding: 40px 16px 14px; background: linear-gradient(transparent, rgba(15,20,36,.9)); font-size: 14px; font-weight: 600; }
+  .ph { display: grid; place-items: center; text-align: center; padding: 16px; border: 2px dashed rgba(255,200,61,.55); color: var(--gold); font-size: 13px; font-weight: 600; line-height: 1.35; }
+  .studio { padding-block: 120px 140px; border-top: 1px solid var(--line); }
+  .studio .grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 72px; align-items: center; }
+  .reveal { border-radius: 22px; overflow: hidden; clip-path: inset(var(--clip, 12%) round 22px); }
+  .reveal img { aspect-ratio: 4 / 3; object-fit: cover; transform: scale(var(--zoom, 1.15)); }
+  .studio p { margin-top: 24px; color: var(--muted); max-width: 52ch; }
+  .studio p.lead { color: var(--text); font-size: 20px; }
+  .principles { margin-top: 36px; border-top: 1px solid var(--line); }
+  .principles div { display: grid; grid-template-columns: 150px 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .principles span { color: var(--muted); }
+  .games { padding-block: 120px; border-top: 1px solid var(--line); }
+  .games h2 { margin-bottom: 44px; }
+  .game-card { display: grid; grid-template-columns: minmax(260px, 420px) 1fr; gap: 56px; align-items: center; padding: 24px; border-radius: 24px; background: var(--panel); border: 1px solid var(--line); text-decoration: none; transition: border-color .2s; }
+  .game-card:hover { border-color: rgba(255,200,61,.5); }
+  .game-card img.art { width: 100%; aspect-ratio: 9 / 11; object-fit: cover; object-position: center 35%; border-radius: 16px; }
+  .game-card img.logo { width: 340px; }
+  .game-card p { margin-top: 14px; color: var(--muted); font-size: 18px; max-width: 40ch; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+  .chips span { font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); }
+  .chips span.status { border-color: rgba(255,200,61,.5); color: var(--gold); }
+  .contact { padding-block: 140px; border-top: 1px solid var(--line); }
+  .contact .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; }
+  .contact .mail { display: inline-block; margin-top: 28px; font-stretch: 112%; font-weight: 700; font-size: clamp(24px, 3vw, 36px); text-decoration-thickness: 2px; text-underline-offset: 6px; }
+  .contact p { color: var(--muted); margin-top: 20px; max-width: 40ch; }
+  .socials { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 32px; }
+  .socials span { font-size: 13px; padding: 8px 14px; border-radius: 999px; border: 2px dashed rgba(255,200,61,.5); color: var(--gold); font-weight: 600; }
+  form { display: grid; gap: 14px; }
+  label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+  input, textarea { font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+  input:focus, textarea:focus { border-color: var(--teal); outline: none; }
+  [data-status] { min-height: 1.5em; font-size: 14px; color: var(--teal); }
+  footer { border-top: 1px solid var(--line); padding-block: 36px; color: var(--muted); font-size: 14px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  dialog.trailer { padding: 0; border: 0; background: transparent; overflow: visible; }
+  dialog.trailer::backdrop { background: rgba(5,8,16,.9); }
+  dialog.trailer video { height: min(86vh, 900px); aspect-ratio: 9 / 16; border-radius: 20px; }
+  dialog.trailer button { position: absolute; top: 0; right: -58px; }
+
+  @media (max-width: 900px) {
+    .top nav { display: none; }
+    .intro { height: 560vh; }
+    .hud { padding-bottom: 28px; }
+    .hud .wrap { flex-direction: column; align-items: start; }
+    .hud p { font-size: 17px; }
+    .editor { inset: 84px 0 auto; }
+    .panel { min-width: 0; padding: 10px 12px; font-size: 12px; }
+    .panel.stats-panel { display: none; }
+    .cap { padding-bottom: 48px; }
+    .details { padding-block: 96px 80px; }
+    .details .grid, .studio .grid, .contact .grid { grid-template-columns: 1fr; gap: 44px; }
+    .phone { width: min(320px, 82%); justify-self: center; }
+    .loop { grid-template-columns: repeat(2, auto); }
+    .strip { margin-top: 72px; }
+    .track { grid-auto-columns: 66%; }
+    .studio, .games, .contact { padding-block: 88px; }
+    .principles div { grid-template-columns: 1fr; gap: 2px; }
+    .game-card { grid-template-columns: 1fr; gap: 24px; padding: 16px; }
+    .game-card img.art { aspect-ratio: 4 / 3; }
+    .game-card img.logo { width: 220px; }
+    .game-card p { font-size: 16px; }
+    dialog.trailer button { right: 8px; top: 8px; }
+    dialog.trailer video { height: auto; width: 92vw; }
+  }
+  .static .intro { height: auto; }
+  .static .stage { position: relative; height: 100svh; }
+  .static .hint, .static .editor { display: none; }
+</style>
+</head>
+<body>
+<div class="concept-tag">Concept E: Grid to World</div>
+
+<header class="top" id="top">
+  <div class="wrap">
+    <a href="#"><img src="../assets/lootlab-badge.webp" alt="Loot Lab Studios home"></a>
+    <nav aria-label="Main"><a href="#games">Games</a><a href="#studio">Studio</a><a href="#contact">Contact</a></nav>
+  </div>
+</header>
+
+<main>
+  <section class="intro" id="intro" aria-label="Loot Lab Studios introduction: a game world being built from a wireframe grid">
+    <div class="stage">
+      <canvas id="gl" aria-hidden="true"></canvas>
+      <div class="vignette"></div>
+      <canvas id="knock" role="img" aria-label="Loot Lab"></canvas>
+
+      <div class="editor" id="editor" aria-hidden="true">
+        <div class="wrap">
+          <div class="panel">
+            <h4>new_world.scene</h4>
+            <ol id="steps">
+              <li><b>01</b>Wireframe</li>
+              <li><b>02</b>Materials</li>
+              <li><b>03</b>Populate</li>
+              <li><b>04</b>Lighting</li>
+              <li><b>05</b>Play</li>
+            </ol>
+          </div>
+          <div class="panel stats-panel">
+            <h4>Stats</h4>
+            <dl class="stats">
+              <dt>Triangles</dt><dd id="sTris">0</dd>
+              <dt>Entities</dt><dd id="sEnt">0</dd>
+              <dt>Lights</dt><dd id="sLights">0</dd>
+              <dt>Build</dt><dd id="sBuild">0%</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud" id="hud">
+        <div class="wrap">
+          <p><strong>Loot Lab Studios</strong> is an independent game studio. Scroll to watch a world get built.</p>
+          <span class="hint"><i></i>Scroll to begin</span>
+        </div>
+      </div>
+
+      <div class="cap" data-cap="0.30,0.36,0.44,0.48"><div class="wrap"><p class="big">Every game starts as a grid and an idea.</p></div></div>
+      <div class="cap" data-cap="0.48,0.52,0.59,0.63"><div class="wrap"><p class="big">Shape it. Paint it.</p></div></div>
+      <div class="cap" data-cap="0.63,0.67,0.73,0.77"><div class="wrap"><p class="big">Fill it with life.</p></div></div>
+      <div class="cap" data-cap="0.77,0.80,0.85,0.88"><div class="wrap"><p class="big">Light it up.</p></div></div>
+      <div class="cap" data-cap="0.90,0.95,2,2" id="finale">
+        <div class="wrap">
+          <p class="big">Where imagination becomes playable.</p>
+          <div class="actions">
+            <a class="btn btn-gold" href="#games">See our games</a>
+            <a class="btn btn-ghost" href="#studio">Meet the studio</a>
+          </div>
+        </div>
+      </div>
+      <div class="meter" id="meter"></div>
+    </div>
+  </section>
+
+  <section class="details" id="games" aria-labelledby="tt-title">
+    <div class="wrap">
+      <div class="grid">
+        <div>
+          <p class="kicker">Our first game, in development</p>
+          <h2 id="tt-title" class="tilt"><img src="../assets/tt-logo.webp" alt="Toon Tactics" data-tilt></h2>
+          <p class="desc">A stylized mobile strategy game inspired by auto-battlers and tactics classics. Recruit a squad of toon heroes, position them on the board, and watch your plan play out against legendary foes.</p>
+          <ul class="loop" aria-label="Core loop"><li>Auto chess</li><li>Collect</li><li>Upgrade</li><li>Battle</li></ul>
+          <div class="actions">
+            <a class="btn btn-gold" href="#">Explore Toon Tactics</a>
+            <button class="btn btn-ghost" data-open-trailer>Watch the trailer</button>
+          </div>
+        </div>
+        <div class="phone">
+          <video data-loop src="../assets/tt-trailer-loop.mp4" poster="../assets/tt-trailer-poster.webp" muted loop playsinline autoplay preload="none" aria-label="Toon Tactics trailer, muted preview"></video>
+          <button class="btn btn-primary" data-open-trailer>Play with sound</button>
+        </div>
+      </div>
+      <div class="strip" data-gallery>
+        <header>
+          <h3>Media</h3>
+          <div class="nav"><button class="icon-btn" data-prev aria-label="Previous">&#8592;</button><button class="icon-btn" data-next aria-label="Next">&#8594;</button></div>
+        </header>
+        <div class="track" data-track>
+          <figure class="frame"><img src="../assets/tt-splash.webp" alt="Toon Tactics splash art: toon heroes charge across a castle battlefield" loading="lazy"><figcaption>Splash art</figcaption></figure>
+          <figure class="frame"><img src="../assets/tt-trailer-poster.webp" alt="Trailer still: a horned rogue with glowing green blades" loading="lazy"><figcaption>Trailer still</figcaption></figure>
+          <div class="frame ph">Placeholder: gameplay screenshot 1</div>
+          <div class="frame ph">Placeholder: gameplay screenshot 2</div>
+          <div class="frame ph">Placeholder: character art</div>
+          <div class="frame ph">Placeholder: environment art</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="studio" id="studio" aria-labelledby="about-title">
+    <div class="wrap grid">
+      <figure class="reveal" data-reveal>
+        <img src="../assets/studio-unity.webp" alt="A developer building a stylized island scene in Unity, with toon character figurines and sketchbooks on the desk" loading="lazy">
+      </figure>
+      <div>
+        <h2 id="about-title">A small studio with a big toolbox.</h2>
+        <p class="lead">We're an independent studio making games we'd want to play ourselves: easy to pick up, deep enough to master, and full of characters you remember.</p>
+        <p>Every project starts as a playable prototype. We iterate in-engine, test early, and keep polishing until each match feels great on a phone in your hand.</p>
+        <div class="principles">
+          <div><strong>Play first</strong><span>Ideas earn their place by being fun in a build, not on a slide.</span></div>
+          <div><strong>Readable depth</strong><span>Clear at a glance, rewarding over hundreds of matches.</span></div>
+          <div><strong>Made with care</strong><span>Art, animation and feel get the same attention as systems.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="games" aria-labelledby="games-title">
+    <div class="wrap">
+      <h2 id="games-title">Our games</h2>
+      <a class="game-card" href="#">
+        <img class="art" src="../assets/tt-splash.webp" alt="" loading="lazy">
+        <div>
+          <img class="logo" src="../assets/tt-logo.webp" alt="Toon Tactics" loading="lazy">
+          <p>Tactical auto-battler for mobile with collectible toon heroes.</p>
+          <div class="chips"><span class="status">In development</span><span>Mobile</span></div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section class="contact" id="contact" aria-labelledby="contact-title">
+    <div class="wrap grid">
+      <div>
+        <h2 id="contact-title">Say hello.</h2>
+        <p>Press, partnerships, playtesting or just a good idea: we read everything.</p>
+        <a class="mail" href="mailto:hello@lootlab.io">hello@lootlab.io</a>
+        <div class="socials" aria-label="Social links"><span>Placeholder: social link</span><span>Placeholder: social link</span><span>Placeholder: Discord</span></div>
+      </div>
+      <form data-concept>
+        <label>Name<input name="name" autocomplete="name" required></label>
+        <label>Email<input name="email" type="email" autocomplete="email" required></label>
+        <label>Message<textarea name="message" rows="5" required></textarea></label>
+        <div><button class="btn btn-primary" type="submit">Send message</button></div>
+        <p data-status role="status"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>&copy; 2026 Loot Lab Studios</span><span>Privacy policy &nbsp; Terms</span></div></footer>
+
+<dialog class="trailer" aria-label="Toon Tactics trailer">
+  <video src="../assets/tt-trailer.mp4" poster="../assets/tt-trailer-poster.webp" controls playsinline preload="none"></video>
+  <button class="icon-btn" data-close aria-label="Close trailer">&#10005;</button>
+</dialog>
+
+<script src="../shared.js"></script>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (reduce) document.documentElement.classList.add('static');
+
+const $ = (id) => document.getElementById(id);
+const intro = $('intro'), glCanvas = $('gl'), knock = $('knock'), kctx = knock.getContext('2d');
+const hud = $('hud'), editor = $('editor'), meter = $('meter'), top = $('top');
+const caps = [...document.querySelectorAll('[data-cap]')].map((el) => ({ el, r: el.dataset.cap.split(',').map(Number) }));
+const stepEls = [...document.querySelectorAll('#steps li')];
+
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const range = (v, a, b) => clamp((v - a) / (b - a));
+const ease = (t) => (t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+const lerp = (a, b, t) => a + (b - a) * t;
+
+// Scroll timeline (fractions of the pinned intro).
+const T = { zoom: [0.03, 0.30], rise: [0.0, 0.26], mat: [0.47, 0.62], life: [0.62, 0.76], light: [0.76, 0.9] };
+
+/* ---------------- 3D world ---------------- */
+const renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, innerWidth < 900 ? 1.5 : 1.75));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+const INK = new THREE.Color('#0f1424'), DUSK = new THREE.Color('#24365f'), GOLDEN = new THREE.Color('#4b3f7d');
+scene.background = INK.clone();
+scene.fog = new THREE.Fog(INK.clone(), 40, 120);
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 400);
+
+// Deterministic value noise so the island is identical on every visit.
+const hash = (x, y) => { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); };
+const smooth = (t) => t * t * (3 - 2 * t);
+function noise(x, y) {
+  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+  const u = smooth(xf), v = smooth(yf);
+  return lerp(lerp(a, b, u), lerp(c, d, u), v);
+}
+const fbm = (x, y) => { let v = 0, amp = .5, f = 1; for (let o = 0; o < 5; o++) { v += noise(x * f + 11, y * f + 7) * amp; amp *= .5; f *= 2.03; } return v; };
+const SIZE = 44, SEG = 110;
+function heightAt(x, z) {
+  const r = Math.hypot(x * 0.95, z * 1.1) / (SIZE * 0.42);
+  const fall = Math.pow(clamp(1 - r), 1.3);
+  const ridge = Math.pow(fbm(x * 0.07, z * 0.07), 1.6);
+  return (ridge * 14 + 0.6) * fall - 1.1;
+}
+
+// Flat-shaded terrain: non-indexed so every face gets its own colour.
+const base = new THREE.PlaneGeometry(SIZE, SIZE, SEG, SEG).toNonIndexed();
+base.rotateX(-Math.PI / 2);
+const pos = base.attributes.position;
+for (let i = 0; i < pos.count; i++) pos.setY(i, heightAt(pos.getX(i), pos.getZ(i)));
+base.computeVertexNormals();
+const faceColor = new Float32Array(pos.count * 3);
+const faceDist = new Float32Array(pos.count);
+const SAND = new THREE.Color('#e9d49b'), GRASS = new THREE.Color('#5cb85a'), GRASS2 = new THREE.Color('#3f9a4f'), ROCK = new THREE.Color('#8b90a3'), SNOW = new THREE.Color('#f3f5fb'), SEABED = new THREE.Color('#2c4a6e');
+for (let f = 0; f < pos.count; f += 3) {
+  let h = 0, cx = 0, cz = 0;
+  for (let k = 0; k < 3; k++) { h += pos.getY(f + k); cx += pos.getX(f + k); cz += pos.getZ(f + k); }
+  h /= 3; cx /= 3; cz /= 3;
+  const c = h < -0.3 ? SEABED : h < 0.35 ? SAND : h < 3.2 ? (hash(cx, cz) > .5 ? GRASS : GRASS2) : h < 6.2 ? ROCK : SNOW;
+  const d = Math.hypot(cx, cz);
+  for (let k = 0; k < 3; k++) { faceColor.set([c.r, c.g, c.b], (f + k) * 3); faceDist[f + k] = d; }
+}
+const colors = new Float32Array(pos.count * 3);
+base.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+const terrain = new THREE.Group();
+const solid = new THREE.Mesh(base, new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: .92, metalness: 0, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 }));
+const wireMat = new THREE.MeshBasicMaterial({ color: '#3fe0c5', wireframe: true, transparent: true, opacity: .45 });
+const wire = new THREE.Mesh(base, wireMat);
+terrain.add(solid, wire);
+scene.add(terrain);
+
+const grid = new THREE.GridHelper(220, 110, '#3fe0c5', '#2a3a66');
+grid.material.transparent = true; grid.material.opacity = .35;
+grid.position.y = -1.12;
+scene.add(grid);
+
+// Expanding scan ring that paints materials across the terrain.
+const ring = new THREE.Mesh(new THREE.RingGeometry(0.98, 1, 128), new THREE.MeshBasicMaterial({ color: '#3fe0c5', transparent: true, opacity: .9, side: THREE.DoubleSide }));
+ring.rotation.x = -Math.PI / 2; ring.position.y = 0.2;
+scene.add(ring);
+
+// Editor gizmo and selection box.
+const gizmo = new THREE.Group();
+const axis = (dir, color) => new THREE.ArrowHelper(dir, new THREE.Vector3(), 5, color, 1.1, .6);
+gizmo.add(axis(new THREE.Vector3(1, 0, 0), '#ff5a6a'), axis(new THREE.Vector3(0, 1, 0), '#7be37b'), axis(new THREE.Vector3(0, 0, 1), '#5aa9ff'));
+gizmo.position.set(0, heightAt(0, 0) + 1.5, 0);
+scene.add(gizmo);
+const box = new THREE.Box3(new THREE.Vector3(-SIZE * .42, -1.2, -SIZE * .38), new THREE.Vector3(SIZE * .42, 10, SIZE * .38));
+const selection = new THREE.Box3Helper(box, '#3fe0c5');
+selection.material.transparent = true;
+scene.add(selection);
+
+// Water.
+const water = new THREE.Mesh(new THREE.PlaneGeometry(400, 400, 1, 1), new THREE.MeshStandardMaterial({ color: '#2f86d6', roughness: .25, metalness: .2, transparent: true, opacity: .82 }));
+water.rotation.x = -Math.PI / 2;
+scene.add(water);
+
+// Trees and loot crates, placed deterministically on suitable ground.
+const spots = [];
+for (let i = 0; i < 4000 && spots.length < 170; i++) {
+  const x = (hash(i, 1.3) - .5) * SIZE * .8, z = (hash(i, 7.7) - .5) * SIZE * .8, h = heightAt(x, z);
+  if (h > 0.55 && h < 3.4 && hash(i, 3.1) > .35) spots.push({ x, z, h, d: Math.hypot(x, z), s: .7 + hash(i, 9.2) * .7, r: hash(i, 4.4) * 6.28 });
+}
+const treeGeo = new THREE.ConeGeometry(.55, 1.7, 6); treeGeo.translate(0, 1.25, 0);
+const trunkGeo = new THREE.CylinderGeometry(.12, .16, .5, 5); trunkGeo.translate(0, .25, 0);
+const trees = new THREE.InstancedMesh(treeGeo, new THREE.MeshStandardMaterial({ color: '#2f8a45', flatShading: true, roughness: .9 }), spots.length);
+const trunks = new THREE.InstancedMesh(trunkGeo, new THREE.MeshStandardMaterial({ color: '#7a5434', flatShading: true }), spots.length);
+scene.add(trees, trunks);
+const crateSpots = [[-6, 4], [7, -3], [2, 8], [-9, -6], [11, 5], [-2, -10]].map(([x, z]) => ({ x, z, h: Math.max(heightAt(x, z), 0.2) }));
+const crateMat = new THREE.MeshStandardMaterial({ color: '#ffc83d', emissive: '#ffb21a', emissiveIntensity: 0, roughness: .5 });
+const crates = crateSpots.map((c) => { const m = new THREE.Mesh(new THREE.BoxGeometry(.9, .9, .9), crateMat); scene.add(m); return m; });
+const crateLights = crateSpots.slice(0, 3).map(() => { const l = new THREE.PointLight('#ffbf47', 0, 9, 2); scene.add(l); return l; });
+
+const hemi = new THREE.HemisphereLight('#bcd2ff', '#20263a', .25);
+const sun = new THREE.DirectionalLight('#ffffff', .3);
+sun.position.set(-20, 30, 10);
+scene.add(hemi, sun);
+
+const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), v3 = new THREE.Vector3(), sc = new THREE.Vector3();
+let lastMat = -1;
+function updateWorld(p, time) {
+  // Starts part-raised so peaks already show through the title letters.
+  const rise = lerp(0.4, 1, ease(range(p, ...T.rise)));
+  const mat = range(p, ...T.mat);
+  const life = range(p, ...T.life);
+  const light = ease(range(p, ...T.light));
+
+  terrain.scale.y = Math.max(0.02, rise);
+  terrain.position.y = (1 - rise) * -1.1;
+
+  // Paint faces as the scan ring passes.
+  const R = mat * SIZE * 0.62;
+  if (Math.abs(R - lastMat) > 0.01) {
+    for (let i = 0; i < pos.count; i++) {
+      const t = clamp((R - faceDist[i]) / 2.5);
+      colors[i * 3] = lerp(0.07, faceColor[i * 3], t);
+      colors[i * 3 + 1] = lerp(0.09, faceColor[i * 3 + 1], t);
+      colors[i * 3 + 2] = lerp(0.16, faceColor[i * 3 + 2], t);
+    }
+    base.attributes.color.needsUpdate = true;
+    lastMat = R;
+  }
+  ring.scale.setScalar(Math.max(R, 0.01));
+  ring.material.opacity = mat > 0 && mat < 1 ? .9 : 0;
+  wireMat.opacity = .45 * (1 - ease(range(p, T.mat[0] + .04, T.mat[1] + .02))) + .02;
+  gizmo.scale.setScalar(Math.max(0.001, rise * (1 - range(p, T.mat[0], T.mat[0] + .06))));
+  gizmo.rotation.y = time * .25;
+  selection.material.opacity = rise * (1 - range(p, T.mat[0], T.mat[0] + .06));
+  selection.visible = selection.material.opacity > .01;
+  grid.material.opacity = .35 * (1 - range(p, T.life[0], T.life[0] + .06));
+
+  water.position.y = lerp(-2.2, 0.05, ease(range(p, T.life[0], T.life[0] + .07))) + Math.sin(time * .8) * .03;
+  water.visible = p > T.life[0];
+
+  spots.forEach((s, i) => {
+    const g = easeOut(clamp(life * 1.5 - (s.d / (SIZE * .45)) * .5));
+    q.setFromAxisAngle(v3.set(0, 1, 0), s.r);
+    sc.setScalar(Math.max(0.0001, g * s.s));
+    m4.compose(v3.set(s.x, s.h * rise - .15, s.z), q, sc);
+    trees.setMatrixAt(i, m4); trunks.setMatrixAt(i, m4);
+  });
+  trees.instanceMatrix.needsUpdate = true; trunks.instanceMatrix.needsUpdate = true;
+
+  crates.forEach((m, i) => {
+    const c = crateSpots[i];
+    const g = easeOut(clamp(life * 1.4 - .3 - i * .06));
+    m.scale.setScalar(Math.max(0.0001, g));
+    m.position.set(c.x, c.h * rise + .55 + Math.sin(time * 1.6 + i) * .12 * g, c.z);
+    m.rotation.y = time * .6 + i;
+  });
+  crateMat.emissiveIntensity = .15 + light * 1.4;
+  crateLights.forEach((l, i) => { const c = crateSpots[i]; l.position.set(c.x, c.h + 1.4, c.z); l.intensity = light * 14; });
+
+  hemi.intensity = lerp(.25, .55, ease(mat)) + light * .5;
+  sun.intensity = lerp(.3, 1.4, ease(mat)) + light * 1.4;
+  sun.color.set('#ffffff').lerp(new THREE.Color('#ffd0a0'), light);
+  sun.position.set(lerp(-20, 26, light), lerp(30, 12, light), lerp(10, -14, light));
+  const bg = INK.clone().lerp(DUSK, ease(range(p, T.mat[0], T.life[1]))).lerp(GOLDEN, light * .8);
+  scene.background.copy(bg); scene.fog.color.copy(bg);
+
+  // Camera: from a steep editor view down to a low hero angle.
+  const tilt = ease(range(p, 0.2, 0.95));
+  const ang = lerp(0.55, 2.25, ease(p)) + Math.sin(time * .15) * .02;
+  const narrow = camera.aspect < 0.8;
+  const rad = lerp(40, 31, tilt) * (narrow ? 1.9 : 1);
+  const hgt = narrow ? lerp(52, 17, tilt) : lerp(34, 9, tilt);
+  camera.position.set(Math.cos(ang) * rad, hgt, Math.sin(ang) * rad);
+  camera.lookAt(0, lerp(0, 2.2, tilt), 0);
+
+  const ents = Math.round(spots.length * clamp(life * 1.5)) + crates.filter((m) => m.scale.x > .01).length;
+  return { tris: Math.round((pos.count / 3) * clamp(rise * 4)), ents, lights: 2 + (light > .02 ? crateLights.length : 0), build: Math.round(p * 100) };
+}
+
+/* ---------------- Knockout title ---------------- */
+let W = 0, H = 0, dpr = 1, lines = [], fs = 0, oc = { x: 0, y: 0 }, maxScale = 60;
+const setFont = (ctx, size) => { ctx.font = `900 ${size}px Archivo, sans-serif`; ctx.fontStretch = 'expanded'; };
+function layout() {
+  dpr = Math.min(devicePixelRatio || 1, 2);
+  W = innerWidth; H = intro.querySelector('.stage').clientHeight;
+  knock.width = Math.round(W * dpr); knock.height = Math.round(H * dpr);
+  renderer.setSize(W, H, false);
+  camera.aspect = W / H; camera.fov = W / H < 0.8 ? 52 : 40; camera.updateProjectionMatrix();
+  const oneLine = W / H >= 0.9;
+  const words = oneLine ? ['LOOT LAB'] : ['LOOT', 'LAB'];
+  setFont(kctx, 100);
+  const widest = Math.max(...words.map((w) => kctx.measureText(w).width));
+  fs = Math.min((W * (oneLine ? 0.88 : 0.84)) / widest * 100, H * (oneLine ? 0.4 : 0.3));
+  setFont(kctx, fs);
+  const capH = kctx.measureText('T').actualBoundingBoxAscent;
+  const lineGap = fs * 0.92;
+  const blockH = capH + lineGap * (words.length - 1);
+  const firstBaseline = H * 0.46 - blockH / 2 + capH;
+  lines = words.map((text, i) => ({ text, x: (W - kctx.measureText(text).width) / 2, y: firstBaseline + i * lineGap }));
+  // Zoom through the stem of the "T": a solid stroke, so a window onto the world.
+  const L = lines[0];
+  const tx0 = L.x + kctx.measureText('LOO').width;
+  const tW = Math.ceil(kctx.measureText('T').width);
+  const probe = document.createElement('canvas');
+  probe.width = tW + 4; probe.height = Math.ceil(capH) + 4;
+  const pc = probe.getContext('2d', { willReadFrequently: true });
+  setFont(pc, fs);
+  pc.fillText('T', 2, capH + 2);
+  const row = pc.getImageData(0, Math.round(capH * 0.62) + 2, probe.width, 1).data;
+  let a = -1, b = -1;
+  for (let x = 0; x < probe.width; x++) if (row[x * 4 + 3] > 128) { if (a < 0) a = x; b = x; }
+  const stemW = a < 0 ? fs * 0.2 : b - a + 1;
+  oc = { x: tx0 + (a < 0 ? tW / 2 : (a + b) / 2) - 2, y: L.y - capH * 0.38 };
+  maxScale = 1.25 * Math.max(W / stemW, H / (capH * 0.55));
+}
+
+let mx = .7, my = .35, tmx = .7, tmy = .35;
+addEventListener('pointermove', (e) => { tmx = e.clientX / innerWidth; tmy = e.clientY / innerHeight; }, { passive: true });
+
+function drawKnock(z) {
+  const k = kctx;
+  k.setTransform(dpr, 0, 0, dpr, 0, 0);
+  k.globalCompositeOperation = 'source-over';
+  k.clearRect(0, 0, W, H);
+  k.fillStyle = '#0f1424';
+  k.fillRect(0, 0, W, H);
+  k.globalAlpha = 1 - z;
+  k.strokeStyle = 'rgba(170,186,255,0.07)';
+  k.lineWidth = 1;
+  k.beginPath();
+  for (let x = (W % 96) / 2; x < W; x += 96) { k.moveTo(x + .5, 0); k.lineTo(x + .5, H); }
+  for (let y = (H % 96) / 2; y < H; y += 96) { k.moveTo(0, y + .5); k.lineTo(W, y + .5); }
+  k.stroke();
+  const spot = k.createRadialGradient(mx * W, my * H, 0, mx * W, my * H, Math.max(W, H) * 0.45);
+  spot.addColorStop(0, 'rgba(63,224,197,0.16)');
+  spot.addColorStop(1, 'rgba(63,224,197,0)');
+  k.fillStyle = spot;
+  k.fillRect(0, 0, W, H);
+  k.globalAlpha = 1;
+  const e = ease(z);
+  const s = Math.pow(maxScale, e);
+  k.translate(lerp(oc.x, W / 2, e), lerp(oc.y, H / 2, e)); k.scale(s, s); k.translate(-oc.x, -oc.y);
+  setFont(k, fs);
+  k.fillStyle = '#000';
+  k.globalCompositeOperation = 'destination-out';
+  for (const l of lines) k.fillText(l.text, l.x, l.y);
+  k.globalCompositeOperation = 'source-over';
+  k.strokeStyle = 'rgba(63,224,197,0.55)';
+  k.lineWidth = 1.25 / s;
+  for (const l of lines) k.strokeText(l.text, l.x, l.y);
+}
+
+/* ---------------- Loop ---------------- */
+let sp = 0;
+const statEls = { tris: $('sTris'), ents: $('sEnt'), lights: $('sLights'), build: $('sBuild') };
+const reveals = document.querySelectorAll('[data-reveal]');
+function progress() {
+  const r = intro.getBoundingClientRect();
+  return clamp(-r.top / (intro.offsetHeight - innerHeight));
+}
+const clock = new THREE.Clock();
+function frame() {
+  const target = reduce ? 1 : progress();
+  sp += (target - sp) * 0.12;
+  if (Math.abs(target - sp) < 0.0003) sp = target;
+  mx += (tmx - mx) * 0.08; my += (tmy - my) * 0.08;
+  const time = reduce ? 0 : clock.getElapsedTime();
+
+  const inView = intro.getBoundingClientRect().bottom > 0;
+  if (inView) {
+    const stats = updateWorld(sp, time);
+    renderer.render(scene, camera);
+    const z = reduce ? 1 : range(sp, ...T.zoom);
+    if (z < 1) drawKnock(z);
+    knock.style.opacity = String(1 - range(z, 0.86, 1));
+    knock.style.visibility = z >= 1 ? 'hidden' : 'visible';
+    hud.style.opacity = String(1 - range(sp, 0.02, 0.1));
+    editor.style.opacity = String(range(sp, 0.27, 0.32) * (1 - range(sp, 0.86, 0.9)));
+    const stage = sp < T.mat[0] ? 0 : sp < T.life[0] ? 1 : sp < T.light[0] ? 2 : sp < 0.9 ? 3 : 4;
+    stepEls.forEach((li, i) => { li.classList.toggle('on', i === stage); li.classList.toggle('done', i < stage); });
+    statEls.tris.textContent = stats.tris.toLocaleString();
+    statEls.ents.textContent = stats.ents;
+    statEls.lights.textContent = stats.lights;
+    statEls.build.textContent = stats.build + '%';
+    for (const c of caps) {
+      const [a, b, d, e] = c.r;
+      const o = reduce ? (c.el.id === 'finale' ? 1 : 0) : range(sp, a, b) * (1 - range(sp, d, e));
+      c.el.style.opacity = o;
+      c.el.style.transform = `translateY(${(1 - o) * 22}px)`;
+      c.el.classList.toggle('on', o > .5);
+    }
+    meter.style.transform = `scaleX(${sp})`;
+  }
+  top.classList.toggle('solid', intro.getBoundingClientRect().bottom < 80);
+  for (const el of reveals) {
+    const r = el.getBoundingClientRect();
+    const t = reduce ? 1 : ease(range(innerHeight - r.top, 0, innerHeight * 0.8));
+    el.style.setProperty('--clip', `${(1 - t) * 12}%`);
+    el.style.setProperty('--zoom', String(1.15 - t * 0.15));
+  }
+  requestAnimationFrame(frame);
+}
+
+document.querySelectorAll('[data-tilt]').forEach((img) => {
+  if (reduce) return;
+  const box = img.parentElement;
+  box.addEventListener('pointermove', (e) => {
+    const r = box.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+    img.style.transform = `rotateY(${x * 14}deg) rotateX(${-y * 14}deg) scale(1.03)`;
+  });
+  box.addEventListener('pointerleave', () => { img.style.transform = ''; });
+});
+
+addEventListener('resize', layout);
+document.fonts.load('900 100px Archivo').finally(() => { layout(); requestAnimationFrame(frame); });
+</script>
+</body>
+</html>

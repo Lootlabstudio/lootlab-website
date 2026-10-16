@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Concept F: Enter the Logo | Loot Lab Studios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f1424;
+    --panel: #161d33;
+    --line: rgba(170, 186, 255, 0.14);
+    --text: #eef1fa;
+    --muted: #9aa3bf;
+    --teal: #3fe0c5;
+    --gold: #ffc83d;
+    --wrap: min(1240px, 100% - 48px);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  dialog { margin: auto; }
+  body { background: var(--ink); color: var(--text); font: 400 17px/1.6 Archivo, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  img, video, canvas { display: block; max-width: 100%; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 4px; }
+  .wrap { width: var(--wrap); margin-inline: auto; }
+  h2 { font-stretch: 112%; font-weight: 800; font-size: clamp(36px, 4.6vw, 64px); line-height: 1; letter-spacing: -0.015em; }
+
+  .concept-tag { position: fixed; z-index: 60; right: 12px; bottom: 12px; background: #fff; color: #111; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 6px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 24px; border-radius: 999px; font: 600 16px/1 Archivo, sans-serif; white-space: nowrap; text-decoration: none; cursor: pointer; border: 1px solid transparent; transition: transform .15s, background .2s; }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--text); color: var(--ink); }
+  .btn-primary:hover { background: #fff; }
+  .btn-ghost { border-color: rgba(238,241,250,.3); color: var(--text); background: rgba(15,20,36,.35); backdrop-filter: blur(8px); }
+  .btn-ghost:hover { background: rgba(255,255,255,.1); }
+  .btn-gold { background: var(--gold); color: #2a1d00; }
+
+  .top { position: fixed; inset: 0 0 auto; z-index: 40; transition: background .3s; }
+  .top.solid { background: rgba(15,20,36,.72); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+  .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 76px; }
+  .top img { width: 46px; }
+  /* The big badge owns the intro; the small one returns with the solid header. */
+  .top .brand { opacity: 0; visibility: hidden; transition: opacity .3s, visibility .3s; }
+  .top.solid .brand { opacity: 1; visibility: visible; }
+  .top nav { display: flex; gap: 28px; font-weight: 500; font-size: 15px; }
+  .top nav a { text-decoration: none; color: var(--muted); }
+  .top nav a:hover { color: var(--text); }
+
+  /* ---------- Scroll-driven intro ---------- */
+  .intro { position: relative; height: 640vh; }
+  .stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #0b0f1c; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(10,14,26,.55) 100%), linear-gradient(180deg, transparent 60%, rgba(10,14,26,.7)); }
+  .hud { position: absolute; inset: auto 0 0; padding-bottom: 40px; pointer-events: none; }
+  .hud .wrap { display: flex; justify-content: space-between; align-items: end; gap: 24px; }
+  .hud p { max-width: 34ch; font-size: 19px; color: var(--muted); }
+  .hud p strong { color: var(--text); font-weight: 600; }
+  .hint { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; color: var(--muted); }
+  .hint i { position: relative; width: 1px; height: 44px; background: var(--line); overflow: hidden; }
+  .hint i::after { content: ""; position: absolute; left: 0; top: -40%; width: 1px; height: 40%; background: var(--teal); animation: drip 1.8s ease-in-out infinite; }
+  @keyframes drip { to { top: 100%; } }
+
+  /* Editor chrome that appears while the world is being built */
+  .editor { position: absolute; inset: 96px 0 auto; opacity: 0; pointer-events: none; }
+  .editor .wrap { display: flex; justify-content: space-between; align-items: start; gap: 16px; }
+  .panel { background: rgba(15,20,36,.62); backdrop-filter: blur(10px); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; font-size: 13px; min-width: 210px; }
+  .panel h4 { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+  .panel ol { list-style: none; padding: 0; display: grid; gap: 4px; }
+  .panel li { display: flex; gap: 10px; align-items: center; color: var(--muted); transition: color .2s; }
+  .panel li b { font-weight: 600; font-variant-numeric: tabular-nums; width: 18px; color: rgba(154,163,191,.6); }
+  .panel li.on { color: var(--text); }
+  .panel li.on b { color: var(--teal); }
+  .panel li.done { color: var(--text); opacity: .55; }
+  .stats { display: grid; grid-template-columns: auto auto; gap: 4px 18px; font-variant-numeric: tabular-nums; }
+  .stats dt { color: var(--muted); }
+  .stats dd { text-align: right; }
+  .cap { position: absolute; inset: auto 0 0; padding-bottom: 72px; opacity: 0; pointer-events: none; }
+  .cap.on { pointer-events: auto; }
+  .cap p.big { font-stretch: 118%; font-weight: 800; font-size: clamp(34px, 5vw, 76px); line-height: .98; letter-spacing: -0.015em; max-width: 15ch; text-shadow: 0 4px 30px rgba(10,14,26,.6); }
+  .cap .actions { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+  .meter { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--teal); transform-origin: left; transform: scaleX(0); }
+
+  /* ---------- Rest of the page ---------- */
+  .details { padding-block: 140px 120px; border-top: 1px solid var(--line); }
+  .details .grid { display: grid; grid-template-columns: 1fr minmax(300px, 380px); gap: 72px; align-items: center; }
+  .tilt { perspective: 900px; width: min(440px, 100%); }
+  .tilt img { transition: transform .2s ease-out; filter: drop-shadow(0 18px 40px rgba(0,0,0,.45)); }
+  .details p.desc { max-width: 46ch; margin-top: 28px; font-size: 19px; color: #dfe4f5; }
+  .loop { display: grid; grid-template-columns: repeat(4, auto); justify-content: start; gap: 10px 26px; margin-top: 30px; padding: 0; list-style: none; font-weight: 600; font-size: 15px; }
+  .loop li { display: flex; align-items: center; gap: 8px; }
+  .loop li::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--gold); transform: rotate(45deg); }
+  .details .actions { display: flex; gap: 14px; margin-top: 38px; flex-wrap: wrap; }
+  .phone { position: relative; aspect-ratio: 9 / 16; border-radius: 34px; padding: 10px; background: linear-gradient(160deg, #2a3457, #0c1020); box-shadow: 0 40px 100px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.08); }
+  .phone video { width: 100%; height: 100%; object-fit: cover; border-radius: 26px; }
+  .icon-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--text); cursor: pointer; font-size: 16px; }
+  .icon-btn:hover { background: rgba(255,255,255,.08); }
+  /* Media showcase: the cover art in full, then three portrait pieces in a staggered row. */
+  .showcase { margin-top: 110px; display: grid; gap: 28px; }
+  .shot { position: relative; display: block; width: 100%; padding: 0; border: 0; border-radius: 24px; overflow: hidden; background: var(--panel); cursor: zoom-in; box-shadow: 0 30px 80px rgba(0,0,0,.45); transition: box-shadow .4s; }
+  .shot::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); pointer-events: none; }
+  .shot img { width: 100%; height: 100%; object-fit: cover; transition: transform .7s cubic-bezier(.2,.7,.2,1); }
+  .shot:hover { box-shadow: 0 30px 90px rgba(255,200,61,.16); }
+  .shot:hover img { transform: scale(1.035); }
+  .shot.cover { aspect-ratio: 3 / 2; }
+  .trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; align-items: start; margin-top: 36px; }
+  .shot.tall { aspect-ratio: 9 / 16; transform: translateY(var(--py, 0px)); }
+  .trio .shot:nth-child(2) { margin-top: 64px; }
+  dialog.viewer { padding: 0; border: 0; background: transparent; overflow: visible; max-width: 94vw; }
+  dialog.viewer::backdrop { background: rgba(5,8,16,.92); }
+  dialog.viewer img { max-width: 92vw; max-height: 90vh; border-radius: 18px; }
+  dialog.viewer button { position: absolute; top: 0; right: -58px; }
+  /* ---------- Studio ---------- */
+  .studio { position: relative; padding-block: 160px 150px; border-top: 1px solid var(--line); overflow-x: clip; }
+  .studio::before { content: ""; position: absolute; left: 50%; top: 38%; width: 90vw; height: 70vh; translate: -50% 0; background: radial-gradient(closest-side, rgba(63,224,197,.08), transparent); pointer-events: none; }
+  .studio-head { position: relative; display: grid; grid-template-columns: 1.1fr 1fr; gap: 72px; align-items: end; }
+  .studio-head h2 { font-stretch: 125%; font-weight: 850; font-size: clamp(48px, 7vw, 108px); line-height: .92; letter-spacing: -0.02em; }
+  .studio-intro p { color: var(--muted); font-size: 18px; max-width: 46ch; }
+  .studio-intro p + p { margin-top: 18px; }
+  .studio-intro p.lead { color: var(--text); font-size: 22px; line-height: 1.5; }
+  /* Full-bleed image that opens out from a framed card as it scrolls into view. */
+  .studio-shot { position: relative; margin: 96px 16px 0; height: min(88vh, 62vw); border-radius: 28px; overflow: hidden; clip-path: inset(calc(var(--clip, 12%) * .5) calc(var(--clip, 12%) * 1.7) round 28px); box-shadow: 0 50px 140px rgba(0,0,0,.5); }
+  .studio-shot img { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; transform: scale(var(--zoom, 1.15)); }
+  .studio-shot::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 60%, rgba(10,14,26,.55)); pointer-events: none; }
+  .studio-shot figcaption { position: absolute; left: 32px; bottom: 28px; z-index: 1; padding: 10px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; background: rgba(15,20,36,.55); border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); }
+  .process { list-style: none; padding: 0; margin-top: 110px; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); }
+  .process li { position: relative; padding: 36px 28px 8px 0; }
+  .process li + li { padding-left: 28px; border-left: 1px solid var(--line); }
+  .process li::before { content: ""; position: absolute; left: 0; top: -1px; height: 2px; width: 0; background: var(--teal); transition: width .5s cubic-bezier(.2,.7,.2,1); }
+  .process li:hover::before { width: 100%; }
+  .process .num { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 14px; color: var(--teal); }
+  .process h3 { margin-top: 18px; font-stretch: 112%; font-weight: 800; font-size: 26px; letter-spacing: -0.01em; }
+  .process p { margin-top: 12px; color: var(--muted); font-size: 16px; }
+  .studio-foot { margin-top: 110px; display: grid; grid-template-columns: 1fr auto; gap: 48px; align-items: end; }
+  .studio-foot blockquote { font-stretch: 112%; font-weight: 700; font-size: clamp(26px, 3.2vw, 44px); line-height: 1.12; max-width: 22ch; letter-spacing: -0.01em; }
+  .toolbox { display: flex; align-items: center; gap: 14px; }
+  .toolbox-label { color: var(--muted); font-size: 14px; font-weight: 600; }
+  .toolbox ul { list-style: none; padding: 0; display: flex; gap: 8px; }
+  .toolbox li { padding: 10px 18px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.04); font-weight: 600; font-size: 15px; }
+  /* ---------- Contact ---------- */
+  .contact { position: relative; overflow: hidden; isolation: isolate; padding-block: 170px 150px; border-top: 1px solid var(--line); background: #0b0f1c; }
+  .contact::before { content: ""; position: absolute; inset: -25%; z-index: -2; background: radial-gradient(38% 48% at 22% 32%, rgba(63,224,197,.15), transparent 70%), radial-gradient(42% 52% at 80% 72%, rgba(120,96,230,.2), transparent 70%); animation: drift 20s ease-in-out infinite alternate; }
+  @keyframes drift { to { transform: translate3d(4%, -5%, 0) rotate(5deg); } }
+  .contact-sky { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+  .sparkle { position: absolute; width: var(--s); height: var(--s); background: #eafffb; clip-path: polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%); opacity: .05; animation: twinkle var(--d) ease-in-out var(--delay) infinite; }
+  @keyframes twinkle { 0%, 100% { opacity: .05; transform: scale(.6); } 50% { opacity: var(--o); transform: scale(1); } }
+  .contact .grid { display: grid; grid-template-columns: 1fr minmax(0, 520px); gap: 80px; align-items: center; }
+  .hello-badge { width: 84px; margin-bottom: 30px; filter: drop-shadow(0 0 22px rgba(63,224,197,.5)); }
+  .contact h2 { font-stretch: 125%; font-weight: 850; font-size: clamp(56px, 8vw, 120px); line-height: .9; letter-spacing: -0.02em; }
+  .hello p { margin-top: 26px; color: var(--muted); font-size: 19px; max-width: 36ch; }
+  .mail-pill { display: inline-flex; align-items: center; gap: 8px; margin-top: 36px; padding: 6px 6px 6px 22px; border-radius: 999px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(8px); }
+  .mail-pill a { padding-block: 8px; font-stretch: 112%; font-weight: 700; font-size: clamp(18px, 2vw, 24px); text-decoration: none; transition: color .2s; }
+  .mail-pill a:hover { color: var(--teal); }
+  .mail-pill button { height: 42px; padding: 0 18px; border: 0; border-radius: 999px; background: var(--teal); color: #052620; font: 600 14px/1 Archivo, sans-serif; cursor: pointer; transition: transform .15s; }
+  .mail-pill button:active { transform: scale(.95); }
+  .socials { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .socials li { font-size: 13px; padding: 8px 14px; border-radius: 999px; border: 2px dashed rgba(255,200,61,.5); color: var(--gold); font-weight: 600; }
+  .glass { display: grid; gap: 18px; padding: 34px; border-radius: 28px; background: linear-gradient(160deg, rgba(255,255,255,.08), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(18px); box-shadow: 0 40px 120px rgba(0,0,0,.45); }
+  .topics { border: 0; padding: 0; margin: 0 0 4px; display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+  .topics legend { padding: 0; margin-bottom: 12px; font-size: 14px; font-weight: 600; color: var(--muted); }
+  .topics label { position: relative; }
+  .topics input { position: absolute; opacity: 0; pointer-events: none; }
+  .topics span { display: inline-block; padding: 9px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); font-size: 14px; font-weight: 600; cursor: pointer; transition: background .2s, color .2s, border-color .2s; }
+  .topics span:hover { border-color: rgba(63,224,197,.6); }
+  .topics input:checked + span { background: var(--teal); color: #052620; border-color: transparent; }
+  .topics input:focus-visible + span { outline: 2px solid var(--teal); outline-offset: 3px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .field { display: grid; gap: 8px; font-size: 14px; font-weight: 600; color: var(--muted); }
+  .field input, .field textarea { font: inherit; font-weight: 400; color: var(--text); background: rgba(11,15,28,.55); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 14px 16px; transition: border-color .2s, box-shadow .2s; }
+  .field textarea { resize: vertical; min-height: 130px; }
+  .field input:focus, .field textarea:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 4px rgba(63,224,197,.15); }
+  .send { width: 100%; justify-content: center; margin-top: 4px; }
+  [data-status] { min-height: 1.4em; font-size: 14px; color: var(--teal); text-align: center; }
+  @media (prefers-reduced-motion: reduce) { .contact::before, .sparkle { animation: none; } .sparkle { opacity: .35; } }
+  footer { border-top: 1px solid var(--line); padding-block: 36px; color: var(--muted); font-size: 14px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  dialog.trailer { padding: 0; border: 0; background: transparent; overflow: visible; }
+  dialog.trailer::backdrop { background: rgba(5,8,16,.9); }
+  dialog.trailer video { height: min(86vh, 900px); aspect-ratio: 9 / 16; border-radius: 20px; }
+  dialog.trailer button { position: absolute; top: 0; right: -58px; }
+
+  @media (max-width: 900px) {
+    .top nav { display: none; }
+    .intro { height: 560vh; }
+    .hud { padding-bottom: 28px; }
+    .hud .wrap { flex-direction: column; align-items: start; }
+    .hud p { font-size: 17px; }
+    .editor { inset: 84px 0 auto; }
+    .panel { min-width: 0; padding: 10px 12px; font-size: 12px; }
+    .panel.stats-panel { display: none; }
+    .cap { padding-bottom: 48px; }
+    .details { padding-block: 96px 80px; }
+    .details .grid, .contact .grid { grid-template-columns: 1fr; gap: 44px; }
+    .phone { width: min(320px, 82%); justify-self: center; }
+    .loop { grid-template-columns: repeat(2, auto); }
+    .showcase { margin-top: 72px; gap: 18px; }
+    .trio { margin-top: 0; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 74%; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; margin-inline: -24px; padding: 0 24px 8px; scrollbar-width: none; }
+    .trio::-webkit-scrollbar { display: none; }
+    .trio .shot { scroll-snap-align: center; }
+    .trio .shot:nth-child(2) { margin-top: 0; }
+    .shot { border-radius: 18px; }
+    dialog.viewer button { right: 8px; top: 8px; }
+    .studio { padding-block: 96px 88px; }
+    .studio-head { grid-template-columns: 1fr; gap: 28px; }
+    .studio-intro p.lead { font-size: 19px; }
+    .studio-shot { margin: 56px 0 0; height: 62vh; border-radius: 0; clip-path: inset(calc(var(--clip, 12%) * .4) calc(var(--clip, 12%) * .9) round 20px); }
+    .studio-shot img { object-position: 30% center; }
+    .studio-shot figcaption { left: 20px; bottom: 20px; font-size: 13px; }
+    .process { grid-template-columns: 1fr; margin-top: 64px; }
+    .process li, .process li + li { padding: 26px 0 22px; border-left: 0; border-bottom: 1px solid var(--line); }
+    .process h3 { margin-top: 10px; font-size: 22px; }
+    .studio-foot { grid-template-columns: 1fr; gap: 28px; margin-top: 64px; }
+    .contact { padding-block: 104px 88px; }
+    .row { grid-template-columns: 1fr; }
+    .glass { padding: 22px; border-radius: 22px; }
+    .hello-badge { width: 64px; margin-bottom: 22px; }
+    .mail-pill { padding-left: 16px; }
+    dialog.trailer button { right: 8px; top: 8px; }
+    dialog.trailer video { height: auto; width: 92vw; }
+  }
+  /* Short phone screens (e.g. iPhone SE): smaller intro captions so the world stays visible. */
+  @media (max-height: 700px) and (max-width: 900px) { .cap p.big { font-size: 30px; } .cap { padding-bottom: 32px; } .cap .actions { margin-top: 18px; } }
+  .static .intro { height: auto; }
+  .static .stage { position: relative; height: 100svh; }
+  .static .hint, .static .editor { display: none; }
+</style>
+</head>
+<body>
+<div class="concept-tag">Concept F: Enter the Logo</div>
+
+<header class="top" id="top">
+  <div class="wrap">
+    <a class="brand" href="#"><img src="../assets/lootlab-badge.webp" alt="Loot Lab Studios home"></a>
+    <nav aria-label="Main"><a href="#games">Games</a><a href="#studio">Studio</a><a href="#contact">Contact</a></nav>
+  </div>
+</header>
+
+<main>
+  <section class="intro" id="intro" aria-label="Loot Lab Studios introduction: a game world being built from a wireframe grid">
+    <div class="stage">
+      <canvas id="gl" aria-hidden="true"></canvas>
+      <div class="vignette"></div>
+      <canvas id="knock" role="img" aria-label="Loot Lab Game Studio badge"></canvas>
+
+      <div class="editor" id="editor" aria-hidden="true">
+        <div class="wrap">
+          <div class="panel">
+            <h4>new_world.scene</h4>
+            <ol id="steps">
+              <li><b>01</b>Wireframe</li>
+              <li><b>02</b>Materials</li>
+              <li><b>03</b>Populate</li>
+              <li><b>04</b>Lighting</li>
+              <li><b>05</b>Play</li>
+            </ol>
+          </div>
+          <div class="panel stats-panel">
+            <h4>Stats</h4>
+            <dl class="stats">
+              <dt>Triangles</dt><dd id="sTris">0</dd>
+              <dt>Entities</dt><dd id="sEnt">0</dd>
+              <dt>Lights</dt><dd id="sLights">0</dd>
+              <dt>Build</dt><dd id="sBuild">0%</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud" id="hud">
+        <div class="wrap">
+          <p><strong>Loot Lab Studios</strong> is an independent game studio. Scroll to step inside.</p>
+          <span class="hint"><i></i>Scroll to begin</span>
+        </div>
+      </div>
+
+      <div class="cap" data-cap="0.30,0.36,0.44,0.48"><div class="wrap"><p class="big">Every game starts as an idea,</p></div></div>
+      <div class="cap" data-cap="0.48,0.52,0.59,0.63"><div class="wrap"><p class="big">And then design,</p></div></div>
+      <div class="cap" data-cap="0.63,0.67,0.73,0.77"><div class="wrap"><p class="big">Fill it with life,</p></div></div>
+      <div class="cap" data-cap="0.77,0.80,0.85,0.88"><div class="wrap"><p class="big">Light it up,</p></div></div>
+      <div class="cap" data-cap="0.90,0.95,2,2" id="finale">
+        <div class="wrap">
+          <p class="big">And watch imagination become playable.</p>
+          <div class="actions">
+            <a class="btn btn-gold" href="#games">See our games</a>
+            <a class="btn btn-ghost" href="#studio">Meet the studio</a>
+          </div>
+        </div>
+      </div>
+      <div class="meter" id="meter"></div>
+    </div>
+  </section>
+
+  <section class="details" id="games" aria-labelledby="tt-title">
+    <div class="wrap">
+      <div class="grid">
+        <div>
+          <h2 id="tt-title" class="tilt"><img src="../assets/tt-logo.webp" alt="Toon Tactics" data-tilt></h2>
+          <p class="desc">A stylized mobile strategy game inspired by auto-battlers and tactics classics. Recruit a squad of toon heroes, position them on the board, and watch your plan play out against legendary foes.</p>
+          <ul class="loop" aria-label="Core loop"><li>Auto chess</li><li>Collect</li><li>Upgrade</li><li>Battle</li></ul>
+          <div class="actions">
+            <a class="btn btn-gold" href="#">Explore Toon Tactics</a>
+            <button class="btn btn-ghost" data-open-trailer>Watch the trailer</button>
+          </div>
+        </div>
+        <div class="phone">
+          <video data-loop src="../assets/tt-trailer-loop.mp4" poster="../assets/tt-trailer-poster.webp" muted loop playsinline autoplay preload="none" aria-label="Toon Tactics trailer, muted preview"></video>
+        </div>
+      </div>
+      <div class="showcase" aria-label="Toon Tactics media">
+        <button class="shot cover" data-view aria-label="View the Toon Tactics cover art">
+          <img src="../assets/tt-cover.webp" alt="Toon Tactics cover art: a knight, archer, rogue, witch, skeleton mage and stone golem charge across a blocky castle battlefield" loading="lazy">
+        </button>
+        <div class="trio">
+          <button class="shot tall" data-view data-depth="-0.06" aria-label="View the gameplay screenshot">
+            <img src="../assets/tt-gameplay.webp" alt="Gameplay: heroes face a dragon boss on a grass battle board surrounded by cherry blossoms" loading="lazy">
+          </button>
+          <button class="shot tall" data-view data-depth="0.05" aria-label="View the splash art">
+            <img src="../assets/tt-splash.webp" alt="Splash art: a bear-hooded brawler, an orc with a stone hammer and a broom-riding witch charge across a castle battlefield" loading="lazy">
+          </button>
+          <button class="shot tall" data-view data-depth="-0.03" aria-label="View the character pipeline">
+            <img src="../assets/tt-dev-pipeline.webp" alt="Character pipeline: a horned rogue modelled, UV-unwrapped and textured in Blender, then set up in Unity" loading="lazy">
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="studio" id="studio" aria-labelledby="about-title">
+    <div class="wrap studio-head">
+      <h2 id="about-title">Every game starts in the lab.</h2>
+      <div class="studio-intro">
+        <p class="lead">Loot Lab Studios is an independent game studio crafting stylized strategy games with personality and depth.</p>
+        <p>We keep the team small and the standards high. Every character, map and mechanic is made in-house, tested early and refined until it feels right in your hands.</p>
+      </div>
+    </div>
+
+    <figure class="studio-shot" data-reveal>
+      <img src="../assets/studio-unity-hi.webp" alt="A developer building a stylized island scene in Unity, with toon character figurines and sketchbooks on the desk" loading="lazy">
+      <figcaption>Prototyping a new world in Unity</figcaption>
+    </figure>
+
+    <div class="wrap">
+      <ol class="process" aria-label="How we work">
+        <li><span class="num">01</span><h3>Prototype</h3><p>Every idea becomes something playable fast, so we find the fun before anything else.</p></li>
+        <li><span class="num">02</span><h3>Design</h3><p>Characters, worlds and systems are shaped together, so the art and the gameplay tell the same story.</p></li>
+        <li><span class="num">03</span><h3>Build</h3><p>Characters are modelled and textured in Blender, then brought to life in Unity through a pipeline built for a small, fast team.</p></li>
+        <li><span class="num">04</span><h3>Polish</h3><p>Feel, readability and performance are tuned until every match plays beautifully on a phone.</p></li>
+      </ol>
+
+      <div class="studio-foot">
+        <blockquote>Big ideas, small team.</blockquote>
+        <div class="toolbox">
+          <span class="toolbox-label">Built with</span>
+          <ul><li>Unity</li><li>Blender</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact" aria-labelledby="contact-title">
+    <div class="contact-sky" aria-hidden="true"></div>
+    <div class="wrap grid">
+      <div class="hello">
+        <img class="hello-badge" src="../assets/lootlab-logo-hi.webp" alt="">
+        <h2 id="contact-title">Say hello.</h2>
+        <p>Press, partnerships, playtesting or just a good idea: we read everything.</p>
+        <div class="mail-pill">
+          <a href="mailto:hello@lootlab.io">hello@lootlab.io</a>
+          <button type="button" data-copy="hello@lootlab.io">Copy</button>
+        </div>
+        <ul class="socials" aria-label="Social links"><li>Placeholder: social link</li><li>Placeholder: social link</li><li>Placeholder: Discord</li></ul>
+      </div>
+      <form class="glass" data-concept>
+        <fieldset class="topics">
+          <legend>What&rsquo;s it about?</legend>
+          <label><input type="radio" name="topic" value="press" checked><span>Press</span></label>
+          <label><input type="radio" name="topic" value="partnership"><span>Partnership</span></label>
+          <label><input type="radio" name="topic" value="playtesting"><span>Playtesting</span></label>
+          <label><input type="radio" name="topic" value="other"><span>Something else</span></label>
+        </fieldset>
+        <div class="row">
+          <label class="field">Name<input name="name" autocomplete="name" required></label>
+          <label class="field">Email<input name="email" type="email" autocomplete="email" required></label>
+        </div>
+        <label class="field">Message<textarea name="message" rows="5" required></textarea></label>
+        <button class="btn btn-gold send" type="submit">Send message</button>
+        <p data-status role="status"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>&copy; 2026 Loot Lab Studios</span><span>Privacy policy &nbsp; Terms</span></div></footer>
+
+<dialog class="trailer" aria-label="Toon Tactics trailer">
+  <video src="../assets/tt-trailer.mp4" poster="../assets/tt-trailer-poster.webp" controls playsinline preload="none"></video>
+  <button class="icon-btn" data-close aria-label="Close trailer">&#10005;</button>
+</dialog>
+
+<dialog class="viewer" aria-label="Image viewer">
+  <img alt="">
+  <button class="icon-btn" data-close-viewer aria-label="Close image">&#10005;</button>
+</dialog>
+
+<script src="../shared.js"></script>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (reduce) document.documentElement.classList.add('static');
+
+const $ = (id) => document.getElementById(id);
+const intro = $('intro'), glCanvas = $('gl'), knock = $('knock'), kctx = knock.getContext('2d');
+const hud = $('hud'), editor = $('editor'), meter = $('meter'), top = $('top');
+const caps = [...document.querySelectorAll('[data-cap]')].map((el) => ({ el, r: el.dataset.cap.split(',').map(Number) }));
+const stepEls = [...document.querySelectorAll('#steps li')];
+
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const range = (v, a, b) => clamp((v - a) / (b - a));
+const ease = (t) => (t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+const lerp = (a, b, t) => a + (b - a) * t;
+
+// Scroll timeline (fractions of the pinned intro).
+const T = { zoom: [0.06, 0.31], rise: [0.0, 0.26], mat: [0.47, 0.62], life: [0.62, 0.76], light: [0.76, 0.9] };
+
+/* ---------------- 3D world ---------------- */
+const renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, innerWidth < 900 ? 1.5 : 1.75));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+const INK = new THREE.Color('#0f1424'), DUSK = new THREE.Color('#24365f'), GOLDEN = new THREE.Color('#4b3f7d');
+scene.background = INK.clone();
+scene.fog = new THREE.Fog(INK.clone(), 40, 120);
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 400);
+
+// Deterministic value noise so the island is identical on every visit.
+const hash = (x, y) => { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); };
+const smooth = (t) => t * t * (3 - 2 * t);
+function noise(x, y) {
+  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+  const u = smooth(xf), v = smooth(yf);
+  return lerp(lerp(a, b, u), lerp(c, d, u), v);
+}
+const fbm = (x, y) => { let v = 0, amp = .5, f = 1; for (let o = 0; o < 5; o++) { v += noise(x * f + 11, y * f + 7) * amp; amp *= .5; f *= 2.03; } return v; };
+const SIZE = 44, SEG = 110;
+function heightAt(x, z) {
+  const r = Math.hypot(x * 0.95, z * 1.1) / (SIZE * 0.42);
+  const fall = Math.pow(clamp(1 - r), 1.3);
+  const ridge = Math.pow(fbm(x * 0.07, z * 0.07), 1.6);
+  return (ridge * 14 + 0.6) * fall - 1.1;
+}
+
+// Flat-shaded terrain: non-indexed so every face gets its own colour.
+const base = new THREE.PlaneGeometry(SIZE, SIZE, SEG, SEG).toNonIndexed();
+base.rotateX(-Math.PI / 2);
+const pos = base.attributes.position;
+for (let i = 0; i < pos.count; i++) pos.setY(i, heightAt(pos.getX(i), pos.getZ(i)));
+base.computeVertexNormals();
+const faceColor = new Float32Array(pos.count * 3);
+const faceDist = new Float32Array(pos.count);
+const SAND = new THREE.Color('#e9d49b'), GRASS = new THREE.Color('#5cb85a'), GRASS2 = new THREE.Color('#3f9a4f'), ROCK = new THREE.Color('#8b90a3'), SNOW = new THREE.Color('#f3f5fb'), SEABED = new THREE.Color('#2c4a6e');
+for (let f = 0; f < pos.count; f += 3) {
+  let h = 0, cx = 0, cz = 0;
+  for (let k = 0; k < 3; k++) { h += pos.getY(f + k); cx += pos.getX(f + k); cz += pos.getZ(f + k); }
+  h /= 3; cx /= 3; cz /= 3;
+  const c = h < -0.3 ? SEABED : h < 0.35 ? SAND : h < 3.2 ? (hash(cx, cz) > .5 ? GRASS : GRASS2) : h < 6.2 ? ROCK : SNOW;
+  const d = Math.hypot(cx, cz);
+  for (let k = 0; k < 3; k++) { faceColor.set([c.r, c.g, c.b], (f + k) * 3); faceDist[f + k] = d; }
+}
+const colors = new Float32Array(pos.count * 3);
+base.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+const terrain = new THREE.Group();
+const solid = new THREE.Mesh(base, new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: .92, metalness: 0, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 }));
+const wireMat = new THREE.MeshBasicMaterial({ color: '#3fe0c5', wireframe: true, transparent: true, opacity: .45 });
+const wire = new THREE.Mesh(base, wireMat);
+terrain.add(solid, wire);
+scene.add(terrain);
+
+const grid = new THREE.GridHelper(220, 110, '#3fe0c5', '#2a3a66');
+grid.material.transparent = true; grid.material.opacity = .35;
+grid.position.y = -1.12;
+scene.add(grid);
+
+// Expanding scan ring that paints materials across the terrain.
+const ring = new THREE.Mesh(new THREE.RingGeometry(0.98, 1, 128), new THREE.MeshBasicMaterial({ color: '#3fe0c5', transparent: true, opacity: .9, side: THREE.DoubleSide }));
+ring.rotation.x = -Math.PI / 2; ring.position.y = 0.2;
+scene.add(ring);
+
+// Editor gizmo and selection box.
+const gizmo = new THREE.Group();
+const axis = (dir, color) => new THREE.ArrowHelper(dir, new THREE.Vector3(), 5, color, 1.1, .6);
+gizmo.add(axis(new THREE.Vector3(1, 0, 0), '#ff5a6a'), axis(new THREE.Vector3(0, 1, 0), '#7be37b'), axis(new THREE.Vector3(0, 0, 1), '#5aa9ff'));
+gizmo.position.set(0, heightAt(0, 0) + 1.5, 0);
+scene.add(gizmo);
+const box = new THREE.Box3(new THREE.Vector3(-SIZE * .42, -1.2, -SIZE * .38), new THREE.Vector3(SIZE * .42, 10, SIZE * .38));
+const selection = new THREE.Box3Helper(box, '#3fe0c5');
+selection.material.transparent = true;
+scene.add(selection);
+
+// Water.
+const water = new THREE.Mesh(new THREE.PlaneGeometry(400, 400, 1, 1), new THREE.MeshStandardMaterial({ color: '#2f86d6', roughness: .25, metalness: .2, transparent: true, opacity: .82 }));
+water.rotation.x = -Math.PI / 2;
+scene.add(water);
+
+// Trees and loot crates, placed deterministically on suitable ground.
+const spots = [];
+for (let i = 0; i < 4000 && spots.length < 170; i++) {
+  const x = (hash(i, 1.3) - .5) * SIZE * .8, z = (hash(i, 7.7) - .5) * SIZE * .8, h = heightAt(x, z);
+  if (h > 0.55 && h < 3.4 && hash(i, 3.1) > .35) spots.push({ x, z, h, d: Math.hypot(x, z), s: .7 + hash(i, 9.2) * .7, r: hash(i, 4.4) * 6.28 });
+}
+const treeGeo = new THREE.ConeGeometry(.55, 1.7, 6); treeGeo.translate(0, 1.25, 0);
+const trunkGeo = new THREE.CylinderGeometry(.12, .16, .5, 5); trunkGeo.translate(0, .25, 0);
+const trees = new THREE.InstancedMesh(treeGeo, new THREE.MeshStandardMaterial({ color: '#2f8a45', flatShading: true, roughness: .9 }), spots.length);
+const trunks = new THREE.InstancedMesh(trunkGeo, new THREE.MeshStandardMaterial({ color: '#7a5434', flatShading: true }), spots.length);
+scene.add(trees, trunks);
+const crateSpots = [[-6, 4], [7, -3], [2, 8], [-9, -6], [11, 5], [-2, -10]].map(([x, z]) => ({ x, z, h: Math.max(heightAt(x, z), 0.2) }));
+const crateMat = new THREE.MeshStandardMaterial({ color: '#ffc83d', emissive: '#ffb21a', emissiveIntensity: 0, roughness: .5 });
+const crates = crateSpots.map((c) => { const m = new THREE.Mesh(new THREE.BoxGeometry(.9, .9, .9), crateMat); scene.add(m); return m; });
+const crateLights = crateSpots.slice(0, 3).map(() => { const l = new THREE.PointLight('#ffbf47', 0, 9, 2); scene.add(l); return l; });
+
+const hemi = new THREE.HemisphereLight('#bcd2ff', '#20263a', .25);
+const sun = new THREE.DirectionalLight('#ffffff', .3);
+sun.position.set(-20, 30, 10);
+scene.add(hemi, sun);
+
+const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), v3 = new THREE.Vector3(), sc = new THREE.Vector3();
+let lastMat = -1;
+function updateWorld(p, time) {
+  // Starts part-raised so peaks already show through the title letters.
+  const rise = lerp(0.4, 1, ease(range(p, ...T.rise)));
+  const mat = range(p, ...T.mat);
+  const life = range(p, ...T.life);
+  const light = ease(range(p, ...T.light));
+
+  terrain.scale.y = Math.max(0.02, rise);
+  terrain.position.y = (1 - rise) * -1.1;
+
+  // Paint faces as the scan ring passes.
+  const R = mat * SIZE * 0.62;
+  if (Math.abs(R - lastMat) > 0.01) {
+    for (let i = 0; i < pos.count; i++) {
+      const t = clamp((R - faceDist[i]) / 2.5);
+      colors[i * 3] = lerp(0.07, faceColor[i * 3], t);
+      colors[i * 3 + 1] = lerp(0.09, faceColor[i * 3 + 1], t);
+      colors[i * 3 + 2] = lerp(0.16, faceColor[i * 3 + 2], t);
+    }
+    base.attributes.color.needsUpdate = true;
+    lastMat = R;
+  }
+  ring.scale.setScalar(Math.max(R, 0.01));
+  ring.material.opacity = mat > 0 && mat < 1 ? .9 : 0;
+  wireMat.opacity = .45 * (1 - ease(range(p, T.mat[0] + .04, T.mat[1] + .02))) + .02;
+  gizmo.scale.setScalar(Math.max(0.001, rise * (1 - range(p, T.mat[0], T.mat[0] + .06))));
+  gizmo.rotation.y = time * .25;
+  selection.material.opacity = rise * (1 - range(p, T.mat[0], T.mat[0] + .06));
+  selection.visible = selection.material.opacity > .01;
+  grid.material.opacity = .35 * (1 - range(p, T.life[0], T.life[0] + .06));
+
+  water.position.y = lerp(-2.2, 0.05, ease(range(p, T.life[0], T.life[0] + .07))) + Math.sin(time * .8) * .03;
+  water.visible = p > T.life[0];
+
+  spots.forEach((s, i) => {
+    const g = easeOut(clamp(life * 1.5 - (s.d / (SIZE * .45)) * .5));
+    q.setFromAxisAngle(v3.set(0, 1, 0), s.r);
+    sc.setScalar(Math.max(0.0001, g * s.s));
+    m4.compose(v3.set(s.x, s.h * rise - .15, s.z), q, sc);
+    trees.setMatrixAt(i, m4); trunks.setMatrixAt(i, m4);
+  });
+  trees.instanceMatrix.needsUpdate = true; trunks.instanceMatrix.needsUpdate = true;
+
+  crates.forEach((m, i) => {
+    const c = crateSpots[i];
+    const g = easeOut(clamp(life * 1.4 - .3 - i * .06));
+    m.scale.setScalar(Math.max(0.0001, g));
+    m.position.set(c.x, c.h * rise + .55 + Math.sin(time * 1.6 + i) * .12 * g, c.z);
+    m.rotation.y = time * .6 + i;
+  });
+  crateMat.emissiveIntensity = .15 + light * 1.4;
+  crateLights.forEach((l, i) => { const c = crateSpots[i]; l.position.set(c.x, c.h + 1.4, c.z); l.intensity = light * 14; });
+
+  hemi.intensity = lerp(.25, .55, ease(mat)) + light * .5;
+  sun.intensity = lerp(.3, 1.4, ease(mat)) + light * 1.4;
+  sun.color.set('#ffffff').lerp(new THREE.Color('#ffd0a0'), light);
+  sun.position.set(lerp(-20, 26, light), lerp(30, 12, light), lerp(10, -14, light));
+  const bg = INK.clone().lerp(DUSK, ease(range(p, T.mat[0], T.life[1]))).lerp(GOLDEN, light * .8);
+  scene.background.copy(bg); scene.fog.color.copy(bg);
+
+  // Camera: from a steep editor view down to a low hero angle.
+  const tilt = ease(range(p, 0.2, 0.95));
+  const ang = lerp(0.55, 2.25, ease(p)) + Math.sin(time * .15) * .02;
+  const narrow = camera.aspect < 0.8;
+  const rad = lerp(40, 31, tilt) * (narrow ? lerp(1.2, 1.9, tilt) : 1);
+  const hgt = narrow ? lerp(40, 17, tilt) : lerp(34, 9, tilt);
+  camera.position.set(Math.cos(ang) * rad, hgt, Math.sin(ang) * rad);
+  camera.lookAt(0, lerp(0, 2.2, tilt), 0);
+
+  const ents = Math.round(spots.length * clamp(life * 1.5)) + crates.filter((m) => m.scale.x > .01).length;
+  return { tris: Math.round((pos.count / 3) * clamp(rise * 4)), ents, lights: 2 + (light > .02 ? crateLights.length : 0), build: Math.round(p * 100) };
+}
+
+/* ---------------- Logo window ---------------- */
+// The Loot Lab badge is cut out of a dark, softly lit backdrop, so the world
+// being built shows through it. Scrolling zooms into the badge's largest solid
+// area until that window fills the screen.
+const logo = new Image();
+logo.src = '../assets/lootlab-logo-hi.webp';
+let W = 0, H = 0, dpr = 1, lr = { x: 0, y: 0, w: 0, h: 0 }, oc = { x: 0, y: 0 }, maxScale = 40;
+let target = { u: .5, v: .5, r: .05 }; // zoom target in logo-normalised coordinates, r = inscribed radius / logo width
+let halo = null;
+
+function analyseLogo() {
+  // Distance transform on a small copy of the alpha channel: the pixel furthest from
+  // any transparent pixel is the centre of the largest solid area to zoom through.
+  const sw = 160, sh = Math.round(sw * logo.naturalHeight / logo.naturalWidth);
+  const c = document.createElement('canvas'); c.width = sw; c.height = sh;
+  const x = c.getContext('2d', { willReadFrequently: true });
+  x.drawImage(logo, 0, 0, sw, sh);
+  const a = x.getImageData(0, 0, sw, sh).data;
+  const INF = 1e9, d = new Float32Array(sw * sh);
+  for (let i = 0; i < sw * sh; i++) d[i] = a[i * 4 + 3] > 200 ? INF : 0;
+  const at = (i, j) => (i < 0 || j < 0 || i >= sw || j >= sh ? 0 : d[j * sw + i]);
+  for (let j = 0; j < sh; j++) for (let i = 0; i < sw; i++) {
+    const k = j * sw + i; if (!d[k]) continue;
+    d[k] = Math.min(d[k], at(i - 1, j) + 1, at(i, j - 1) + 1, at(i - 1, j - 1) + 1.414, at(i + 1, j - 1) + 1.414);
+  }
+  let best = 0, bi = 0;
+  for (let j = sh - 1; j >= 0; j--) for (let i = sw - 1; i >= 0; i--) {
+    const k = j * sw + i; if (!d[k]) continue;
+    d[k] = Math.min(d[k], at(i + 1, j) + 1, at(i, j + 1) + 1, at(i + 1, j + 1) + 1.414, at(i - 1, j + 1) + 1.414);
+    if (d[k] > best) { best = d[k]; bi = k; }
+  }
+  target = { u: ((bi % sw) + .5) / sw, v: (Math.floor(bi / sw) + .5) / sh, r: best / sw };
+
+  // Teal halo: a blurred, tinted copy of the badge drawn behind the cut-out.
+  const hw = 420, hh = Math.round(hw * logo.naturalHeight / logo.naturalWidth), pad = 90;
+  halo = document.createElement('canvas'); halo.width = hw + pad * 2; halo.height = hh + pad * 2;
+  const hx = halo.getContext('2d');
+  hx.filter = 'blur(28px)';
+  hx.drawImage(logo, pad, pad, hw, hh);
+  hx.filter = 'none';
+  hx.globalCompositeOperation = 'source-in';
+  hx.fillStyle = '#3fe0c5';
+  hx.fillRect(0, 0, halo.width, halo.height);
+  halo.pad = pad / hw;
+}
+
+// Four-point sparkles, echoing the stars in the badge.
+const sparkles = Array.from({ length: 70 }, (_, i) => ({
+  x: (hash(i, 2.1) - .5) * 2.2, y: (hash(i, 5.3) - .5) * 2.2, z: .35 + hash(i, 8.9) * .65,
+  tw: hash(i, 1.7) * 6.28, sp: .6 + hash(i, 3.3) * 1.4,
+}));
+
+function layout() {
+  dpr = Math.min(devicePixelRatio || 1, 2);
+  W = innerWidth; H = intro.querySelector('.stage').clientHeight;
+  knock.width = Math.round(W * dpr); knock.height = Math.round(H * dpr);
+  renderer.setSize(W, H, false);
+  camera.aspect = W / H; camera.fov = W / H < 0.8 ? 52 : 40; camera.updateProjectionMatrix();
+  const ar = logo.naturalWidth / logo.naturalHeight;
+  const h = Math.min(H * 0.6, (W * 0.72) / ar);
+  lr = { w: h * ar, h, x: (W - h * ar) / 2, y: H * 0.45 - h / 2 };
+  oc = { x: lr.x + target.u * lr.w, y: lr.y + target.v * lr.h };
+  maxScale = (1.15 * Math.hypot(W, H) / 2) / Math.max(target.r * lr.w, 1);
+}
+
+let mx = .5, my = .4, tmx = .5, tmy = .4;
+addEventListener('pointermove', (e) => { tmx = e.clientX / innerWidth; tmy = e.clientY / innerHeight; }, { passive: true });
+
+function star(k, x, y, s, a) {
+  k.globalAlpha = a;
+  k.beginPath();
+  k.moveTo(x, y - s); k.quadraticCurveTo(x, y, x + s, y); k.quadraticCurveTo(x, y, x, y + s);
+  k.quadraticCurveTo(x, y, x - s, y); k.quadraticCurveTo(x, y, x, y - s);
+  k.fill();
+}
+
+function drawKnock(z, time, wipe) {
+  const k = kctx;
+  k.setTransform(dpr, 0, 0, dpr, 0, 0);
+  k.globalCompositeOperation = 'source-over';
+  k.globalAlpha = 1;
+  k.fillStyle = '#0b0f1c';
+  k.fillRect(0, 0, W, H);
+
+  // Slow aurora of teal and violet light.
+  const glow = (cx, cy, r, col) => { const g = k.createRadialGradient(cx, cy, 0, cx, cy, r); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)'); k.fillStyle = g; k.fillRect(0, 0, W, H); };
+  const R = Math.max(W, H);
+  glow(W * (.28 + Math.sin(time * .11) * .06), H * (.3 + Math.cos(time * .13) * .05), R * .55, 'rgba(63,224,197,0.10)');
+  glow(W * (.74 + Math.cos(time * .09) * .06), H * (.68 + Math.sin(time * .12) * .05), R * .6, 'rgba(120,96,230,0.13)');
+  glow(mx * W, my * H, R * .3, 'rgba(63,224,197,0.07)');
+
+  const e = ease(z);
+  const s = Math.pow(maxScale, e);
+  k.save();
+  k.translate(lerp(oc.x, W / 2, e), lerp(oc.y, H / 2, e)); k.scale(s, s); k.translate(-oc.x, -oc.y);
+  // Breathing halo behind the badge.
+  if (halo) {
+    k.globalAlpha = (.42 + Math.sin(time * 1.2) * .1) * (1 - e);
+    const p = halo.pad;
+    k.drawImage(halo, lr.x - p * lr.w, lr.y - p * lr.w, lr.w * (1 + 2 * p), lr.h + 2 * p * lr.w);
+    k.globalAlpha = 1;
+  }
+  k.globalCompositeOperation = 'destination-out';
+  k.imageSmoothingQuality = 'high';
+  k.drawImage(logo, lr.x, lr.y, lr.w, lr.h);
+  // Faint glass tint so the badge always reads, whatever the world behind it shows.
+  k.globalCompositeOperation = 'source-over';
+  k.globalAlpha = .16 * (1 - e);
+  k.drawImage(logo, lr.x, lr.y, lr.w, lr.h);
+  k.globalAlpha = 1;
+  // At rest the badge is plain white. As scrolling starts, a scan line sweeps down
+  // it and turns everything above the line into the prototype view.
+  if (wipe < 1) {
+    const yLine = lr.y - lr.h * 0.04 + lr.h * 1.08 * ease(wipe);
+    k.save();
+    k.beginPath(); k.rect(lr.x - lr.w, yLine, lr.w * 3, lr.h * 2); k.clip();
+    k.drawImage(logo, lr.x, lr.y, lr.w, lr.h);
+    k.restore();
+    if (wipe > 0) {
+      k.save();
+      k.shadowColor = 'rgba(63,224,197,0.9)'; k.shadowBlur = 18;
+      k.fillStyle = '#c9fff5';
+      k.fillRect(lr.x - lr.w * .08, yLine - 1 / s, lr.w * 1.16, 2 / s);
+      k.restore();
+    }
+  }
+  k.restore();
+
+  // Sparkles drift and fly past as we zoom in.
+  k.globalCompositeOperation = 'source-over';
+  k.fillStyle = '#eafffb';
+  const cx = W / 2, cy = H * .45;
+  for (const p of sparkles) {
+    const push = 1 + e * 6 / p.z;
+    const x = cx + (p.x * W * .5 + Math.sin(time * .2 * p.sp + p.tw) * 12) * push;
+    const y = cy + (p.y * H * .5 + Math.cos(time * .17 * p.sp + p.tw) * 10) * push;
+    const tw = .35 + .65 * Math.max(0, Math.sin(time * p.sp + p.tw));
+    star(k, x, y, (2 + 5 * p.z) * (1 + e * 3), tw * .55 * p.z * (1 - e * .6));
+  }
+  k.globalAlpha = 1;
+}
+
+
+/* ---------------- Media showcase ---------------- */
+const viewer = document.querySelector('dialog.viewer');
+const viewerImg = viewer.querySelector('img');
+document.querySelectorAll('[data-view]').forEach((btn) => btn.addEventListener('click', () => {
+  const img = btn.querySelector('img');
+  viewerImg.src = img.currentSrc || img.src; viewerImg.alt = img.alt;
+  viewer.showModal();
+}));
+viewer.querySelector('[data-close-viewer]').addEventListener('click', () => viewer.close());
+viewer.addEventListener('click', (e) => { if (e.target === viewer) viewer.close(); });
+const depthEls = [...document.querySelectorAll('[data-depth]')];
+function parallax() {
+  const on = !reduce && innerWidth >= 900;
+  for (const el of depthEls) {
+    const r = el.getBoundingClientRect();
+    // Gentle drift, capped so the portraits never reach the cover art above.
+    const off = on ? clamp((r.top + r.height / 2 - innerHeight / 2) * Number(el.dataset.depth), -24, 24) : 0;
+    el.style.setProperty('--py', `${off.toFixed(1)}px`);
+  }
+}
+
+
+/* ---------------- Contact ---------------- */
+const sky = document.querySelector('.contact-sky');
+for (let i = 0; i < 42; i++) {
+  const el = document.createElement('span');
+  el.className = 'sparkle';
+  el.style.cssText = `left:${hash(i, 12.3) * 100}%;top:${hash(i, 4.7) * 100}%;--s:${4 + hash(i, 6.1) * 10}px;--o:${.25 + hash(i, 9.9) * .6};--d:${3 + hash(i, 2.2) * 4}s;--delay:${-hash(i, 7.4) * 6}s`;
+  sky.append(el);
+}
+document.querySelectorAll('[data-copy]').forEach((btn) => btn.addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(btn.dataset.copy); btn.textContent = 'Copied'; }
+  catch { btn.textContent = 'Press Ctrl+C'; }
+  setTimeout(() => { btn.textContent = 'Copy'; }, 1600);
+}));
+
+/* ---------------- Loop ---------------- */
+let sp = 0;
+const statEls = { tris: $('sTris'), ents: $('sEnt'), lights: $('sLights'), build: $('sBuild') };
+const reveals = document.querySelectorAll('[data-reveal]');
+function progress() {
+  const r = intro.getBoundingClientRect();
+  return clamp(-r.top / (intro.offsetHeight - innerHeight));
+}
+const clock = new THREE.Clock();
+function frame() {
+  const target = reduce ? 1 : progress();
+  sp += (target - sp) * 0.12;
+  if (Math.abs(target - sp) < 0.0003) sp = target;
+  mx += (tmx - mx) * 0.08; my += (tmy - my) * 0.08;
+  const time = reduce ? 0 : clock.getElapsedTime();
+
+  const inView = intro.getBoundingClientRect().bottom > 0;
+  if (inView) {
+    const stats = updateWorld(sp, time);
+    renderer.render(scene, camera);
+    const z = reduce ? 1 : range(sp, ...T.zoom);
+    if (z < 1) drawKnock(z, time, reduce ? 1 : range(sp, 0.004, 0.085));
+    knock.style.opacity = String(1 - range(z, 0.86, 1));
+    knock.style.visibility = z >= 1 ? 'hidden' : 'visible';
+    hud.style.opacity = String(1 - range(sp, 0.02, 0.1));
+    editor.style.opacity = String(range(sp, 0.27, 0.32) * (1 - range(sp, 0.86, 0.9)));
+    const stage = sp < T.mat[0] ? 0 : sp < T.life[0] ? 1 : sp < T.light[0] ? 2 : sp < 0.9 ? 3 : 4;
+    stepEls.forEach((li, i) => { li.classList.toggle('on', i === stage); li.classList.toggle('done', i < stage); });
+    statEls.tris.textContent = stats.tris.toLocaleString();
+    statEls.ents.textContent = stats.ents;
+    statEls.lights.textContent = stats.lights;
+    statEls.build.textContent = stats.build + '%';
+    for (const c of caps) {
+      const [a, b, d, e] = c.r;
+      const o = reduce ? (c.el.id === 'finale' ? 1 : 0) : range(sp, a, b) * (1 - range(sp, d, e));
+      c.el.style.opacity = o;
+      c.el.style.transform = `translateY(${(1 - o) * 22}px)`;
+      c.el.classList.toggle('on', o > .5);
+    }
+    meter.style.transform = `scaleX(${sp})`;
+  }
+  top.classList.toggle('solid', intro.getBoundingClientRect().bottom < 80);
+  for (const el of reveals) {
+    const r = el.getBoundingClientRect();
+    const t = reduce ? 1 : ease(range(innerHeight - r.top, 0, innerHeight * 0.8));
+    el.style.setProperty('--clip', `${(1 - t) * 12}%`);
+    el.style.setProperty('--zoom', String(1.15 - t * 0.15));
+  }
+  parallax();
+  requestAnimationFrame(frame);
+}
+
+document.querySelectorAll('[data-tilt]').forEach((img) => {
+  if (reduce) return;
+  const box = img.parentElement;
+  box.addEventListener('pointermove', (e) => {
+    const r = box.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+    img.style.transform = `rotateY(${x * 14}deg) rotateX(${-y * 14}deg) scale(1.03)`;
+  });
+  box.addEventListener('pointerleave', () => { img.style.transform = ''; });
+});
+
+addEventListener('resize', layout);
+logo.decode().catch(() => {}).finally(() => { analyseLogo(); layout(); requestAnimationFrame(frame); });
+</script>
+</body>
+</html>

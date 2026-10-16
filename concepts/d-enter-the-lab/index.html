@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Concept D: Enter the Lab | Loot Lab Studios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..900&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="../assets/seq/f_001.webp">
+<style>
+  :root {
+    --ink: #0f1424;
+    --panel: #161d33;
+    --line: rgba(170, 186, 255, 0.14);
+    --text: #eef1fa;
+    --muted: #9aa3bf;
+    --teal: #3fe0c5;
+    --gold: #ffc83d;
+    --wrap: min(1240px, 100% - 48px);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  dialog { margin: auto; }
+  body { background: var(--ink); color: var(--text); font: 400 17px/1.6 Archivo, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  img, video, canvas { display: block; max-width: 100%; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 4px; }
+  .wrap { width: var(--wrap); margin-inline: auto; }
+  h2 { font-stretch: 112%; font-weight: 800; font-size: clamp(36px, 4.6vw, 64px); line-height: 1; letter-spacing: -0.015em; }
+
+  .concept-tag { position: fixed; z-index: 60; right: 12px; bottom: 12px; background: #fff; color: #111; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 6px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 24px; border-radius: 999px; font: 600 16px/1 Archivo, sans-serif; white-space: nowrap; text-decoration: none; cursor: pointer; border: 1px solid transparent; transition: transform .15s, background .2s; }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--text); color: var(--ink); }
+  .btn-primary:hover { background: #fff; }
+  .btn-ghost { border-color: rgba(238,241,250,.3); color: var(--text); background: rgba(15,20,36,.35); backdrop-filter: blur(8px); }
+  .btn-ghost:hover { background: rgba(255,255,255,.1); }
+  .btn-gold { background: var(--gold); color: #2a1d00; }
+  .btn svg { width: 16px; height: 16px; }
+
+  /* Fixed header */
+  .top { position: fixed; inset: 0 0 auto; z-index: 40; transition: background .3s, backdrop-filter .3s; }
+  .top.solid { background: rgba(15,20,36,.72); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+  .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 76px; }
+  .top img { width: 46px; }
+  .top nav { display: flex; gap: 28px; font-weight: 500; font-size: 15px; }
+  .top nav a { text-decoration: none; color: var(--muted); }
+  .top nav a:hover { color: var(--text); }
+
+  /* ---------- Scroll-driven intro ---------- */
+  .intro { position: relative; height: 460vh; }
+  .stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .stage .blur { filter: blur(38px) saturate(1.3) brightness(.7); transform: scale(1.25); }
+  .stage .shade { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, rgba(15,20,36,.88) 100%), linear-gradient(90deg, rgba(15,20,36,.55), transparent 55%); opacity: 0; pointer-events: none; }
+  .hud { position: absolute; inset: auto 0 0; padding-bottom: 40px; pointer-events: none; }
+  .hud .wrap { display: flex; justify-content: space-between; align-items: end; gap: 24px; }
+  .hud p { max-width: 34ch; font-size: 19px; color: var(--muted); }
+  .hud p strong { color: var(--text); font-weight: 600; }
+  .hint { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; color: var(--muted); }
+  .hint i { position: relative; width: 1px; height: 44px; background: var(--line); overflow: hidden; }
+  .hint i::after { content: ""; position: absolute; left: 0; top: -40%; width: 1px; height: 40%; background: var(--teal); animation: drip 1.8s ease-in-out infinite; }
+  @keyframes drip { to { top: 100%; } }
+  .cap { position: absolute; inset: auto 0 0; padding-bottom: 72px; opacity: 0; pointer-events: none; }
+  .cap.on { pointer-events: auto; }
+  .cap-1 p { font-stretch: 118%; font-weight: 800; font-size: clamp(34px, 5vw, 76px); line-height: .98; letter-spacing: -0.015em; max-width: 14ch; }
+  .cap-2 .tt-logo { width: min(420px, 78vw); filter: drop-shadow(0 16px 40px rgba(0,0,0,.55)); }
+  .cap-2 p { margin-top: 14px; font-size: 19px; max-width: 36ch; color: #dfe4f5; }
+  .cap-2 .actions { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
+  .meter { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--teal); transform-origin: left; transform: scaleX(0); }
+
+  /* ---------- Toon Tactics details ---------- */
+  .details { position: relative; padding-block: 140px 120px; overflow-x: clip; }
+  .details .grid { display: grid; grid-template-columns: 1fr minmax(300px, 380px); gap: 72px; align-items: center; }
+  .details .kicker { color: var(--gold); font-weight: 600; font-size: 15px; margin-bottom: 18px; }
+  .tilt { perspective: 900px; width: min(440px, 100%); }
+  .tilt img { transition: transform .2s ease-out; filter: drop-shadow(0 18px 40px rgba(0,0,0,.45)); }
+  .details p.desc { max-width: 46ch; margin-top: 28px; font-size: 19px; color: #dfe4f5; }
+  .loop { display: grid; grid-template-columns: repeat(4, auto); justify-content: start; gap: 10px 26px; margin-top: 30px; padding: 0; list-style: none; font-weight: 600; font-size: 15px; }
+  .loop li { display: flex; align-items: center; gap: 8px; }
+  .loop li::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--gold); transform: rotate(45deg); }
+  .details .actions { display: flex; gap: 14px; margin-top: 38px; flex-wrap: wrap; }
+  .phone { position: relative; aspect-ratio: 9 / 16; border-radius: 34px; padding: 10px; background: linear-gradient(160deg, #2a3457, #0c1020); box-shadow: 0 40px 100px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.08); }
+  .phone video { width: 100%; height: 100%; object-fit: cover; border-radius: 26px; }
+  .phone button { position: absolute; left: 50%; bottom: 28px; translate: -50% 0; }
+  .strip { margin-top: 110px; }
+  .strip header { display: flex; justify-content: space-between; align-items: end; margin-bottom: 20px; }
+  .strip h3 { font-size: 20px; font-weight: 700; }
+  .strip .nav { display: flex; gap: 8px; }
+  .icon-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--text); cursor: pointer; font-size: 16px; }
+  .icon-btn:hover { background: rgba(255,255,255,.08); }
+  .track { display: grid; grid-auto-flow: column; grid-auto-columns: clamp(220px, 24vw, 320px); gap: 18px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 14px; scrollbar-width: none; }
+  .track::-webkit-scrollbar { display: none; }
+  .frame { position: relative; scroll-snap-align: start; aspect-ratio: 9 / 16; border-radius: 20px; overflow: hidden; background: var(--panel); }
+  .frame img { width: 100%; height: 100%; object-fit: cover; }
+  .frame figcaption { position: absolute; inset: auto 0 0; padding: 40px 16px 14px; background: linear-gradient(transparent, rgba(15,20,36,.9)); font-size: 14px; font-weight: 600; }
+  .ph { display: grid; place-items: center; text-align: center; padding: 16px; border: 2px dashed rgba(255,200,61,.55); color: var(--gold); font-size: 13px; font-weight: 600; line-height: 1.35; }
+
+  /* ---------- Studio ---------- */
+  .studio { padding-block: 120px 140px; border-top: 1px solid var(--line); }
+  .studio .grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 72px; align-items: center; }
+  .reveal { border-radius: 22px; overflow: hidden; clip-path: inset(var(--clip, 12%) round 22px); }
+  .reveal img { aspect-ratio: 4 / 3; object-fit: cover; transform: scale(var(--zoom, 1.15)); }
+  .studio p { margin-top: 24px; color: var(--muted); max-width: 52ch; }
+  .studio p.lead { color: var(--text); font-size: 20px; }
+  .principles { margin-top: 36px; border-top: 1px solid var(--line); }
+  .principles div { display: grid; grid-template-columns: 150px 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .principles span { color: var(--muted); }
+
+  /* ---------- Games ---------- */
+  .games { padding-block: 120px; border-top: 1px solid var(--line); }
+  .games h2 { margin-bottom: 44px; }
+  .game-card { display: grid; grid-template-columns: minmax(260px, 420px) 1fr; gap: 56px; align-items: center; padding: 24px; border-radius: 24px; background: var(--panel); border: 1px solid var(--line); text-decoration: none; transition: border-color .2s; }
+  .game-card:hover { border-color: rgba(255,200,61,.5); }
+  .game-card img.art { width: 100%; aspect-ratio: 9 / 11; object-fit: cover; object-position: center 35%; border-radius: 16px; }
+  .game-card img.logo { width: 340px; }
+  .game-card p { margin-top: 14px; color: var(--muted); font-size: 18px; max-width: 40ch; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+  .chips span { font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); }
+  .chips span.status { border-color: rgba(255,200,61,.5); color: var(--gold); }
+
+  /* ---------- Contact ---------- */
+  .contact { padding-block: 140px; border-top: 1px solid var(--line); }
+  .contact .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; }
+  .contact .mail { display: inline-block; margin-top: 28px; font-stretch: 112%; font-weight: 700; font-size: clamp(24px, 3vw, 36px); text-decoration-thickness: 2px; text-underline-offset: 6px; }
+  .contact p { color: var(--muted); margin-top: 20px; max-width: 40ch; }
+  .socials { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 32px; }
+  .socials span { font-size: 13px; padding: 8px 14px; border-radius: 999px; border: 2px dashed rgba(255,200,61,.5); color: var(--gold); font-weight: 600; }
+  form { display: grid; gap: 14px; }
+  label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+  input, textarea { font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+  input:focus, textarea:focus { border-color: var(--teal); outline: none; }
+  [data-status] { min-height: 1.5em; font-size: 14px; color: var(--teal); }
+
+  footer { border-top: 1px solid var(--line); padding-block: 36px; color: var(--muted); font-size: 14px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  dialog.trailer { padding: 0; border: 0; background: transparent; overflow: visible; }
+  dialog.trailer::backdrop { background: rgba(5,8,16,.9); }
+  dialog.trailer video { height: min(86vh, 900px); aspect-ratio: 9 / 16; border-radius: 20px; }
+  dialog.trailer button { position: absolute; top: 0; right: -58px; }
+
+  @media (max-width: 900px) {
+    .top nav { display: none; }
+    .intro { height: 400vh; }
+    .hud { padding-bottom: 28px; }
+    .hud .wrap { flex-direction: column; align-items: start; }
+    .hud p { font-size: 17px; }
+    .cap { padding-bottom: 48px; }
+    .details { padding-block: 96px 80px; }
+    .details .grid, .studio .grid, .contact .grid { grid-template-columns: 1fr; gap: 44px; }
+    .phone { width: min(320px, 82%); justify-self: center; }
+    .loop { grid-template-columns: repeat(2, auto); }
+    .strip { margin-top: 72px; }
+    .track { grid-auto-columns: 66%; }
+    .studio, .games, .contact { padding-block: 88px; }
+    .principles div { grid-template-columns: 1fr; gap: 2px; }
+    .game-card { grid-template-columns: 1fr; gap: 24px; padding: 16px; }
+    .game-card img.art { aspect-ratio: 4 / 3; }
+    .game-card img.logo { width: 220px; }
+    .game-card p { font-size: 16px; }
+    dialog.trailer button { right: 8px; top: 8px; }
+    dialog.trailer video { height: auto; width: 92vw; }
+  }
+
+  /* Reduced motion: no pinning or scrubbing; the intro becomes a still title card. */
+  .static .intro { height: auto; }
+  .static .stage { position: relative; height: 100svh; }
+  .static .hint { display: none; }
+</style>
+</head>
+<body>
+<div class="concept-tag">Concept D: Enter the Lab</div>
+
+<header class="top" id="top">
+  <div class="wrap">
+    <a href="#"><img src="../assets/lootlab-badge.webp" alt="Loot Lab Studios home"></a>
+    <nav aria-label="Main"><a href="#games">Games</a><a href="#studio">Studio</a><a href="#contact">Contact</a></nav>
+  </div>
+</header>
+
+<main>
+  <section class="intro" id="intro" aria-label="Loot Lab Studios introduction">
+    <div class="stage">
+      <canvas class="blur" id="blur" width="48" height="86" aria-hidden="true"></canvas>
+      <canvas id="world" aria-hidden="true"></canvas>
+      <div class="shade" id="shade"></div>
+      <canvas id="knock" role="img" aria-label="Loot Lab"></canvas>
+
+      <div class="hud" id="hud">
+        <div class="wrap">
+          <p><strong>Loot Lab Studios</strong> is an independent game studio. Where imagination becomes playable.</p>
+          <span class="hint"><i></i>Scroll to step inside</span>
+        </div>
+      </div>
+
+      <div class="cap cap-1" id="cap1"><div class="wrap"><p>Every world starts in the lab.</p></div></div>
+
+      <div class="cap cap-2" id="cap2">
+        <div class="wrap">
+          <img class="tt-logo" src="../assets/tt-logo.webp" alt="Toon Tactics">
+          <p>Our first game: a stylized mobile strategy game, now in development.</p>
+          <div class="actions">
+            <a class="btn btn-gold" href="#games">Explore Toon Tactics</a>
+            <button class="btn btn-ghost" data-open-trailer><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg>Watch with sound</button>
+          </div>
+        </div>
+      </div>
+      <div class="meter" id="meter"></div>
+    </div>
+  </section>
+
+  <section class="details" id="games" aria-labelledby="tt-title">
+    <div class="wrap">
+      <div class="grid">
+        <div>
+          <p class="kicker">Our first game, in development</p>
+          <h2 id="tt-title" class="tilt"><img src="../assets/tt-logo.webp" alt="Toon Tactics" data-tilt></h2>
+          <p class="desc">A stylized mobile strategy game inspired by auto-battlers and tactics classics. Recruit a squad of toon heroes, position them on the board, and watch your plan play out against legendary foes.</p>
+          <ul class="loop" aria-label="Core loop"><li>Auto chess</li><li>Collect</li><li>Upgrade</li><li>Battle</li></ul>
+          <div class="actions">
+            <a class="btn btn-gold" href="#">Explore Toon Tactics</a>
+            <button class="btn btn-ghost" data-open-trailer><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg>Watch the trailer</button>
+          </div>
+        </div>
+        <div class="phone">
+          <video data-loop src="../assets/tt-trailer-loop.mp4" poster="../assets/tt-trailer-poster.webp" muted loop playsinline autoplay preload="none" aria-label="Toon Tactics trailer, muted preview"></video>
+          <button class="btn btn-primary" data-open-trailer>Play with sound</button>
+        </div>
+      </div>
+
+      <div class="strip" data-gallery>
+        <header>
+          <h3>Media</h3>
+          <div class="nav"><button class="icon-btn" data-prev aria-label="Previous">&#8592;</button><button class="icon-btn" data-next aria-label="Next">&#8594;</button></div>
+        </header>
+        <div class="track" data-track>
+          <figure class="frame"><img src="../assets/tt-splash.webp" alt="Toon Tactics splash art: toon heroes charge across a castle battlefield" loading="lazy"><figcaption>Splash art</figcaption></figure>
+          <figure class="frame"><img src="../assets/tt-trailer-poster.webp" alt="Trailer still: a horned rogue with glowing green blades" loading="lazy"><figcaption>Trailer still</figcaption></figure>
+          <div class="frame ph">Placeholder: gameplay screenshot 1</div>
+          <div class="frame ph">Placeholder: gameplay screenshot 2</div>
+          <div class="frame ph">Placeholder: character art</div>
+          <div class="frame ph">Placeholder: environment art</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="studio" id="studio" aria-labelledby="about-title">
+    <div class="wrap grid">
+      <figure class="reveal" data-reveal>
+        <img src="../assets/studio-unity.webp" alt="A developer building a stylized island scene in Unity, with toon character figurines and sketchbooks on the desk" loading="lazy">
+      </figure>
+      <div>
+        <h2 id="about-title">A small studio with a big toolbox.</h2>
+        <p class="lead">We're an independent studio making games we'd want to play ourselves: easy to pick up, deep enough to master, and full of characters you remember.</p>
+        <p>Every project starts as a playable prototype. We iterate in-engine, test early, and keep polishing until each match feels great on a phone in your hand.</p>
+        <div class="principles">
+          <div><strong>Play first</strong><span>Ideas earn their place by being fun in a build, not on a slide.</span></div>
+          <div><strong>Readable depth</strong><span>Clear at a glance, rewarding over hundreds of matches.</span></div>
+          <div><strong>Made with care</strong><span>Art, animation and feel get the same attention as systems.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="games" aria-labelledby="games-title">
+    <div class="wrap">
+      <h2 id="games-title">Our games</h2>
+      <a class="game-card" href="#">
+        <img class="art" src="../assets/tt-splash.webp" alt="" loading="lazy">
+        <div>
+          <img class="logo" src="../assets/tt-logo.webp" alt="Toon Tactics" loading="lazy">
+          <p>Tactical auto-battler for mobile with collectible toon heroes.</p>
+          <div class="chips"><span class="status">In development</span><span>Mobile</span></div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section class="contact" id="contact" aria-labelledby="contact-title">
+    <div class="wrap grid">
+      <div>
+        <h2 id="contact-title">Say hello.</h2>
+        <p>Press, partnerships, playtesting or just a good idea: we read everything.</p>
+        <a class="mail" href="mailto:hello@lootlab.io">hello@lootlab.io</a>
+        <div class="socials" aria-label="Social links"><span>Placeholder: social link</span><span>Placeholder: social link</span><span>Placeholder: Discord</span></div>
+      </div>
+      <form data-concept>
+        <label>Name<input name="name" autocomplete="name" required></label>
+        <label>Email<input name="email" type="email" autocomplete="email" required></label>
+        <label>Message<textarea name="message" rows="5" required></textarea></label>
+        <div><button class="btn btn-primary" type="submit">Send message</button></div>
+        <p data-status role="status"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>&copy; 2026 Loot Lab Studios</span><span>Privacy policy &nbsp; Terms</span></div></footer>
+
+<dialog class="trailer" aria-label="Toon Tactics trailer">
+  <video src="../assets/tt-trailer.mp4" poster="../assets/tt-trailer-poster.webp" controls playsinline preload="none"></video>
+  <button class="icon-btn" data-close aria-label="Close trailer">&#10005;</button>
+</dialog>
+
+<script src="../shared.js"></script>
+<script>
+(() => {
+  const FRAME_COUNT = 168;
+  const frameSrc = (i) => `../assets/seq/f_${String(i + 1).padStart(3, '0')}.webp`;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) document.documentElement.classList.add('static');
+
+  const $ = (id) => document.getElementById(id);
+  const intro = $('intro'), world = $('world'), blur = $('blur'), knock = $('knock');
+  const wctx = world.getContext('2d'), bctx = blur.getContext('2d'), kctx = knock.getContext('2d');
+  const hud = $('hud'), cap1 = $('cap1'), cap2 = $('cap2'), shade = $('shade'), meter = $('meter'), top = $('top');
+
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const range = (v, a, b) => clamp((v - a) / (b - a));
+  const ease = (t) => (t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  // Frames load in a coarse-to-fine order so scrubbing works before everything arrives.
+  const frames = new Array(FRAME_COUNT);
+  const order = [];
+  for (const step of [16, 8, 4, 2, 1]) for (let i = 0; i < FRAME_COUNT; i += step) if (!order.includes(i)) order.push(i);
+  let next = 0;
+  const loadMore = () => {
+    for (let n = 0; n < 6 && next < order.length; n++) {
+      const i = order[next++], img = new Image();
+      img.decoding = 'async';
+      img.onload = () => { frames[i] = img; dirty = true; if (next < order.length) loadMore(); };
+      img.src = frameSrc(i);
+    }
+  };
+  const nearestFrame = (i) => {
+    for (let d = 0; d < FRAME_COUNT; d++) {
+      if (frames[i - d]) return frames[i - d];
+      if (frames[i + d]) return frames[i + d];
+    }
+    return null;
+  };
+
+  // Layout of the knockout title, recomputed on resize.
+  let W = 0, H = 0, dpr = 1, lines = [], fs = 0, oc = { x: 0, y: 0 }, maxScale = 60;
+  // Setting ctx.font resets fontStretch, so always apply both together.
+  const setFont = (ctx, size) => { ctx.font = `900 ${size}px Archivo, sans-serif`; ctx.fontStretch = 'expanded'; };
+  function layout() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = innerWidth; H = intro.querySelector('.stage').clientHeight;
+    for (const c of [world, knock]) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
+    const oneLine = W / H >= 0.9;
+    const words = oneLine ? ['LOOT LAB'] : ['LOOT', 'LAB'];
+    setFont(kctx, 100);
+    const widest = Math.max(...words.map((w) => kctx.measureText(w).width));
+    fs = Math.min((W * (oneLine ? 0.88 : 0.84)) / widest * 100, H * (oneLine ? 0.4 : 0.3));
+    setFont(kctx, fs);
+    const capH = kctx.measureText('T').actualBoundingBoxAscent;
+    const lineGap = fs * 0.92;
+    const blockH = capH + lineGap * (words.length - 1);
+    const firstBaseline = H * 0.46 - blockH / 2 + capH;
+    lines = words.map((text, i) => {
+      const w = kctx.measureText(text).width;
+      return { text, x: (W - w) / 2, y: firstBaseline + i * lineGap };
+    });
+
+    // The doorway we zoom through is the stem of the "T" in LOOT: a solid letter
+    // stroke, so it is a window onto the world. Find the stem by rasterising the T.
+    const L = lines[0];
+    const tx0 = L.x + kctx.measureText('LOO').width;
+    const tW = Math.ceil(kctx.measureText('T').width);
+    const probe = document.createElement('canvas');
+    probe.width = tW + 4; probe.height = Math.ceil(capH) + 4;
+    const pc = probe.getContext('2d', { willReadFrequently: true });
+    setFont(pc, fs);
+    pc.fillText('T', 2, capH + 2);
+    const rowY = Math.round(capH * 0.62) + 2;
+    const row = pc.getImageData(0, rowY, probe.width, 1).data;
+    let a = -1, b = -1;
+    for (let x = 0; x < probe.width; x++) if (row[x * 4 + 3] > 128) { if (a < 0) a = x; b = x; }
+    const stemW = a < 0 ? fs * 0.2 : b - a + 1;
+    const stemX = a < 0 ? tW / 2 : (a + b) / 2;
+    oc = { x: tx0 + stemX - 2, y: L.y - capH * 0.38 };
+    maxScale = 1.25 * Math.max(W / stemW, H / (capH * 0.55));
+    dirty = true;
+  }
+
+  // Pointer-following lab light on the dark surface.
+  let mx = .7, my = .35, tmx = .7, tmy = .35;
+  addEventListener('pointermove', (e) => { tmx = e.clientX / innerWidth; tmy = e.clientY / innerHeight; }, { passive: true });
+
+  function drawWorld(p, z) {
+    const img = nearestFrame(Math.round(p * (FRAME_COUNT - 1)));
+    if (!img) return;
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    // Portrait footage fills the screen behind the title, then settles into a full-height
+    // window with a blurred surround on wide screens once the title has zoomed away.
+    const cover = Math.max(W / iw, H / ih), contain = H / ih;
+    const s = W / H < 0.7 ? cover : lerp(cover, contain, ease(range(z, 0.6, 1)));
+    const dw = iw * s, dh = ih * s;
+    wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    wctx.clearRect(0, 0, W, H);
+    wctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+    const bs = Math.max(48 / iw, 86 / ih);
+    bctx.drawImage(img, (48 - iw * bs) / 2, (86 - ih * bs) / 2, iw * bs, ih * bs);
+  }
+
+  function drawKnock(z) {
+    const k = kctx;
+    k.setTransform(dpr, 0, 0, dpr, 0, 0);
+    k.globalCompositeOperation = 'source-over';
+    k.clearRect(0, 0, W, H);
+    k.fillStyle = '#0f1424';
+    k.fillRect(0, 0, W, H);
+    // Lab grid that fades as we zoom.
+    k.globalAlpha = 1 - z;
+    k.strokeStyle = 'rgba(170,186,255,0.07)';
+    k.lineWidth = 1;
+    k.beginPath();
+    for (let x = (W % 96) / 2; x < W; x += 96) { k.moveTo(x + .5, 0); k.lineTo(x + .5, H); }
+    for (let y = (H % 96) / 2; y < H; y += 96) { k.moveTo(0, y + .5); k.lineTo(W, y + .5); }
+    k.stroke();
+    const spot = k.createRadialGradient(mx * W, my * H, 0, mx * W, my * H, Math.max(W, H) * 0.45);
+    spot.addColorStop(0, 'rgba(63,224,197,0.16)');
+    spot.addColorStop(1, 'rgba(63,224,197,0)');
+    k.fillStyle = spot;
+    k.fillRect(0, 0, W, H);
+    k.globalAlpha = 1;
+
+    const e = ease(z);
+    const s = Math.pow(maxScale, e);
+    const tx = lerp(oc.x, W / 2, e), ty = lerp(oc.y, H / 2, e);
+    k.translate(tx, ty); k.scale(s, s); k.translate(-oc.x, -oc.y);
+    setFont(k, fs);
+    k.fillStyle = '#000';
+    k.globalCompositeOperation = 'destination-out';
+    for (const l of lines) k.fillText(l.text, l.x, l.y);
+    k.globalCompositeOperation = 'source-over';
+    k.strokeStyle = 'rgba(63,224,197,0.55)';
+    k.lineWidth = 1.25 / s;
+    for (const l of lines) k.strokeText(l.text, l.x, l.y);
+  }
+
+  let sp = 0, dirty = true, lastSp = -1;
+  function progress() {
+    const r = intro.getBoundingClientRect();
+    return clamp(-r.top / (intro.offsetHeight - innerHeight));
+  }
+  function frame() {
+    const target = reduce ? 0 : progress();
+    sp += (target - sp) * 0.14;
+    if (Math.abs(target - sp) < 0.0004) sp = target;
+    mx += (tmx - mx) * 0.08; my += (tmy - my) * 0.08;
+
+    const z = range(sp, 0.05, 0.55);
+    const moving = Math.abs(tmx - mx) > 0.001 || Math.abs(tmy - my) > 0.001;
+    if (dirty || sp !== lastSp || (moving && z < 1)) {
+      drawWorld(reduce ? 0.17 : sp, z);
+      if (z < 1) drawKnock(z);
+      knock.style.opacity = String(1 - range(z, 0.86, 1));
+      knock.style.visibility = z >= 1 ? 'hidden' : 'visible';
+      hud.style.opacity = String(1 - range(sp, 0.02, 0.1));
+      const c1 = range(sp, 0.58, 0.64) * (1 - range(sp, 0.72, 0.77));
+      const c2 = range(sp, 0.8, 0.87);
+      cap1.style.opacity = c1; cap1.style.transform = `translateY(${(1 - c1) * 24}px)`;
+      cap2.style.opacity = c2; cap2.style.transform = `translateY(${(1 - c2) * 24}px)`;
+      cap2.classList.toggle('on', c2 > 0.5);
+      shade.style.opacity = String(range(sp, 0.55, 0.65));
+      meter.style.transform = `scaleX(${sp})`;
+      lastSp = sp; dirty = false;
+    }
+
+    // Header turns solid once the intro is done.
+    top.classList.toggle('solid', intro.getBoundingClientRect().bottom < 80);
+
+    // Studio image reveal, scrubbed by its position in the viewport.
+    for (const el of reveals) {
+      const r = el.getBoundingClientRect();
+      const t = reduce ? 1 : ease(range(innerHeight - r.top, 0, innerHeight * 0.8));
+      el.style.setProperty('--clip', `${(1 - t) * 12}%`);
+      el.style.setProperty('--zoom', String(1.15 - t * 0.15));
+    }
+    requestAnimationFrame(frame);
+  }
+  const reveals = document.querySelectorAll('[data-reveal]');
+
+  // Logo tilt that answers the pointer.
+  document.querySelectorAll('[data-tilt]').forEach((img) => {
+    if (reduce) return;
+    const box = img.parentElement;
+    box.addEventListener('pointermove', (e) => {
+      const r = box.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+      img.style.transform = `rotateY(${x * 14}deg) rotateX(${-y * 14}deg) scale(1.03)`;
+    });
+    box.addEventListener('pointerleave', () => { img.style.transform = ''; });
+  });
+
+  addEventListener('resize', layout);
+  document.fonts.load('900 100px Archivo').finally(() => {
+    layout();
+    loadMore();
+    requestAnimationFrame(frame);
+  });
+})();
+</script>
+</body>
+</html>
