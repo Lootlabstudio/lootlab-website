@@ -36,7 +36,7 @@ const T = {
 
 /* ---------------- Renderer and scene ---------------- */
 const renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio || 1, innerWidth < 900 ? 1.5 : 1.75));
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, innerWidth < 900 ? 2 : 1.75));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.localClippingEnabled = true;
@@ -219,35 +219,68 @@ const shadow = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 3.4), new THREE.MeshB
 shadow.rotation.x = -Math.PI / 2; shadow.position.y = .005; chest.add(shadow);
 
 /* ---------------- The iPhone ---------------- */
-const PW = 3.2, PH = 6.6, PT = .34, SW = PW - .2, SH = PH - .2;
+// Proportions follow a modern iPhone: flat titanium frame with softened edges,
+// black glass with a thin even bezel, Dynamic Island and side buttons.
+const PW = 3.2, PH = 6.65, PT = .3, BEZEL = .085, SW = PW - BEZEL * 2, SH = PH - BEZEL * 2, CORNER = .52;
 const phone = new THREE.Group(); scene.add(phone);
-phone.add(new THREE.Mesh(new RoundedBoxGeometry(PW, PH, PT, 6, .46), new THREE.MeshStandardMaterial({ color: '#30364a', metalness: .9, roughness: .3 })));
-function roundedRect(w, h, r) {
+function roundedShape(w, h, r) {
   const s = new THREE.Shape(), x = -w / 2, y = -h / 2;
   s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r);
   s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
   s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r);
   s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y);
-  const g = new THREE.ShapeGeometry(s, 12), uv = g.attributes.uv, p = g.attributes.position;
+  return s;
+}
+function roundedRect(w, h, r) {
+  const g = new THREE.ShapeGeometry(roundedShape(w, h, r), 24), uv = g.attributes.uv, p = g.attributes.position;
   for (let i = 0; i < uv.count; i++) uv.setXY(i, (p.getX(i) + w / 2) / w, (p.getY(i) + h / 2) / h);
   return g;
 }
+const titanium = new THREE.MeshPhysicalMaterial({ color: '#7b7e86', metalness: 1, roughness: .3, clearcoat: .4, clearcoatRoughness: .2 });
+const BEV = .06;
+const bodyGeo = new THREE.ExtrudeGeometry(roundedShape(PW - BEV * 2, PH - BEV * 2, CORNER - BEV), { depth: PT - BEV * 2, bevelEnabled: true, bevelThickness: BEV, bevelSize: BEV, bevelSegments: 8, curveSegments: 32 });
+bodyGeo.center();
+phone.add(new THREE.Mesh(bodyGeo, titanium));
+const glass = new THREE.Mesh(roundedRect(PW - .04, PH - .04, CORNER - .02), new THREE.MeshPhysicalMaterial({ color: '#020204', roughness: .06, metalness: 0, clearcoat: 1, clearcoatRoughness: .04 }));
+glass.position.z = PT / 2 + .002; phone.add(glass);
 const screenMat = new THREE.MeshBasicMaterial({ color: '#0b0f1c', toneMapped: false });
-const screenMesh = new THREE.Mesh(roundedRect(SW, SH, .38), screenMat);
-screenMesh.position.z = PT / 2 + .003; phone.add(screenMesh);
-const island = new THREE.Mesh(roundedRect(.92, .27, .135), new THREE.MeshBasicMaterial({ color: '#000' }));
-island.position.set(0, SH / 2 - .3, PT / 2 + .006); phone.add(island);
-for (const [y, h] of [[1.6, .5], [.9, .5]]) {
-  const b = new THREE.Mesh(new RoundedBoxGeometry(.06, h, .12, 2, .03), new THREE.MeshStandardMaterial({ color: '#2a2f40', metalness: .9, roughness: .35 }));
-  b.position.set(-PW / 2 - .02, y, 0); phone.add(b);
+const screenMesh = new THREE.Mesh(roundedRect(SW, SH, CORNER - BEZEL), screenMat);
+screenMesh.position.z = PT / 2 + .004; phone.add(screenMesh);
+// A faint diagonal reflection across the glass.
+const sheenTex = canvasTex(256, 512, (g, w, h) => {
+  const gr = g.createLinearGradient(0, 0, w, h * .6);
+  gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(.42, 'rgba(255,255,255,0)'); gr.addColorStop(.5, 'rgba(255,255,255,.9)');
+  gr.addColorStop(.62, 'rgba(255,255,255,0)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+});
+const sheen = new THREE.Mesh(roundedRect(SW, SH, CORNER - BEZEL), new THREE.MeshBasicMaterial({ map: sheenTex, transparent: true, opacity: .07, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+sheen.position.z = PT / 2 + .006; phone.add(sheen);
+const island = new THREE.Mesh(roundedRect(.86, .25, .125), new THREE.MeshBasicMaterial({ color: '#000' }));
+island.position.set(0, SH / 2 - .2, PT / 2 + .008); phone.add(island);
+for (const [x, y, h] of [[-1, 2.05, .24], [-1, 1.5, .48], [-1, .92, .48], [1, 1.25, .72]]) {
+  const b = new THREE.Mesh(new RoundedBoxGeometry(.05, h, .11, 3, .022), titanium);
+  b.position.set(x * (PW / 2 + .012), y, 0); phone.add(b);
 }
 const phoneGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: radial('rgba(130,100,255,.55)', 'rgba(63,224,197,0)'), transparent: true, depthWrite: false, opacity: 0 }));
 phoneGlow.scale.set(11, 11, 1); phoneGlow.position.z = -1.2; phone.add(phoneGlow);
-const PEDESTAL_Y = -.92; // where the chest sits on the game screen (phone-local)
+
+// The chest stands on a small 3D pedestal floating just off the glass, so it
+// always sits exactly in the middle of it.
+const PEDESTAL_Y = -.92, PEDESTAL_Z = PT / 2 + .62;
+const pedestal = new THREE.Group();
+const pedInner = new THREE.Group(); pedInner.scale.z = .55; pedestal.add(pedInner);
+pedInner.add(new THREE.Mesh(new THREE.CylinderGeometry(1, 1.07, .14, 72), new THREE.MeshStandardMaterial({ color: '#3d58c4', metalness: .25, roughness: .35 })));
+const pedRim = new THREE.Mesh(new THREE.TorusGeometry(1, .034, 12, 96), new THREE.MeshStandardMaterial({ color: '#ffc451', metalness: 1, roughness: .25 }));
+pedRim.rotation.x = Math.PI / 2; pedRim.position.y = .07; pedInner.add(pedRim);
+pedestal.position.set(0, PEDESTAL_Y - .07, PEDESTAL_Z);
+phone.add(pedestal);
 
 // The mobile game UI drawn onto the screen.
 function drawScreen() {
-  screenMat.map = canvasTex(620, 1290, (g, w, h) => {
+  // Drawn at 2x so text stays crisp on high-density phone screens.
+  screenMat.map = canvasTex(1240, 2580, (g) => {
+    g.scale(2, 2);
+    const w = 620, h = 1290;
     const F = (wgt, size) => `${wgt} ${size}px "Archivo Variable", system-ui, sans-serif`;
     const bg = g.createLinearGradient(0, 0, 0, h);
     bg.addColorStop(0, '#2c1e63'); bg.addColorStop(.55, '#173266'); bg.addColorStop(1, '#0b1630');
@@ -261,10 +294,10 @@ function drawScreen() {
     g.fillStyle = gl; g.fillRect(0, 0, w, h);
     for (let i = 0; i < 70; i++) { g.fillStyle = `rgba(255,255,255,${.15 + hash(i, 4) * .5})`; g.beginPath(); g.arc(hash(i, 1) * w, hash(i, 2) * h * .5, 1 + hash(i, 3) * 1.8, 0, 7); g.fill(); }
     // Status bar
-    g.fillStyle = '#fff'; g.textBaseline = 'middle'; g.font = F(700, 30); g.fillText('9:41', 58, 60);
-    g.strokeStyle = '#fff'; g.lineWidth = 3; g.beginPath(); g.roundRect(w - 108, 48, 48, 24, 7); g.stroke();
-    g.beginPath(); g.roundRect(w - 104, 52, 34, 16, 4); g.fill();
-    for (let i = 0; i < 4; i++) g.fillRect(w - 186 + i * 13, 70 - (i + 1) * 6, 8, (i + 1) * 6);
+    g.fillStyle = '#fff'; g.textBaseline = 'middle'; g.font = F(700, 28); g.fillText('9:41', 64, 42);
+    g.strokeStyle = '#fff'; g.lineWidth = 3; g.beginPath(); g.roundRect(w - 110, 31, 46, 22, 7); g.stroke();
+    g.beginPath(); g.roundRect(w - 106, 35, 32, 14, 4); g.fill();
+    for (let i = 0; i < 4; i++) g.fillRect(w - 186 + i * 12, 53 - (i + 1) * 5, 8, (i + 1) * 5);
     // Currency pills
     const pill = (x, label, icon) => {
       g.fillStyle = 'rgba(8,12,30,.55)'; g.beginPath(); g.roundRect(x, 118, 212, 62, 31); g.fill();
@@ -278,12 +311,10 @@ function drawScreen() {
     const tg = g.createLinearGradient(0, 256, 0, 330); tg.addColorStop(0, '#fff3c4'); tg.addColorStop(1, '#ffc23d');
     g.fillStyle = tg; g.fillText('LOOT CHEST', cx, 292);
     g.font = F(600, 30); g.fillStyle = 'rgba(255,255,255,.8)'; g.fillText('Daily reward unlocked!', cx, 362);
-    // Pedestal
-    const py = cy + 8;
-    g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(cx, py + 26, 236, 62, 0, 0, 7); g.fill();
-    const pg = g.createLinearGradient(0, py - 50, 0, py + 50); pg.addColorStop(0, '#4f6bc9'); pg.addColorStop(1, '#22306e');
-    g.fillStyle = pg; g.beginPath(); g.ellipse(cx, py, 224, 54, 0, 0, 7); g.fill();
-    g.strokeStyle = 'rgba(255,214,120,.9)'; g.lineWidth = 5; g.stroke();
+    // Soft shadow cast by the 3D pedestal floating above the glass.
+    const sh = g.createRadialGradient(cx, cy + 40, 0, cx, cy + 40, 230);
+    sh.addColorStop(0, 'rgba(0,0,0,.45)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
+    g.save(); g.translate(cx, cy + 40); g.scale(1, .3); g.translate(-cx, -(cy + 40)); g.fillStyle = sh; g.beginPath(); g.arc(cx, cy + 40, 230, 0, 7); g.fill(); g.restore();
     // Rewards row
     const items = [['x250', '#ffc83d'], ['x3', '#3fe0c5'], ['x1', '#ff5d8f']];
     items.forEach(([t, c], i) => {
@@ -367,7 +398,9 @@ function updateWorld(p, time) {
   const rattle = Math.max(0, Math.sin(time * 19)) * .14 * amp;
 
   // VFX: lid pops, light pours out, coins burst and sparkles drift.
-  lidPivot.rotation.x = -(1.95 * easeOutBack(open) + rattle);
+  // Once on the phone the lid tilts back less, so it reads as a panel instead of an edge.
+  const lidMax = lerp(1.95, 1.3, ease(range(p, T.phone[0] + .02, T.phone[1])));
+  lidPivot.rotation.x = -(lidMax * easeOutBack(open) + rattle);
   glowLight.intensity = 22 * vfx;
   glowSprite.material.opacity = .85 * vfx;
   beam.material.opacity = .55 * vfx * (1 - range(p, T.phone[0], T.phone[0] + .04));
@@ -410,19 +443,21 @@ function updateWorld(p, time) {
   const rise = easeOut(range(p, T.phone[0], T.phone[0] + .065));
   phone.visible = p > T.phone[0];
   phone.position.copy(phoneHome).add(v3.set(0, lerp(-(hh * 2 + PH), 0, rise) + (reduce ? 0 : Math.sin(time * .9) * .06), 0));
-  phone.rotation.set(.06 + (my - .4) * .12, -.3 + (mx - .5) * .3 + (reduce ? 0 : Math.sin(time * .5) * .03), 0);
+  phone.rotation.set(.05 + (my - .4) * .1, -.16 + (mx - .5) * .22 + (reduce ? 0 : Math.sin(time * .5) * .025), 0);
+  pedestal.scale.setScalar(Math.max(.001, easeOutBack(range(rise, .55, 1))));
   phoneGlow.material.opacity = rise;
 
   // The chest shrinks and flies onto the game screen.
   const move = ease(range(p, T.phone[0] + .02, T.phone[1]));
   phone.updateMatrixWorld();
-  anchor.set(0, PEDESTAL_Y, PT / 2 + .55);
+  anchor.set(0, PEDESTAL_Y, PEDESTAL_Z);
   phone.localToWorld(anchor);
   chest.position.lerpVectors(v3.set(0, 0, 0), anchor, move);
   chest.scale.setScalar(lerp(1, .56, move));
-  finalQ.copy(phone.quaternion).multiply(yawQ.setFromAxisAngle(v3.set(0, 1, 0), -.45));
+  finalQ.copy(phone.quaternion).multiply(yawQ.setFromAxisAngle(v3.set(0, 1, 0), -.28));
   chest.quaternion.slerpQuaternions(restQ, finalQ, move);
   shadow.visible = move < .5;
+  sparks.scale.setScalar(lerp(1, .5, move));
 
   // Blend the camera between the two shots.
   const buildPos = new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el)).multiplyScalar(buildD).add(buildTarget);
