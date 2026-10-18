@@ -9,7 +9,7 @@ const captions = [
   { range: '0.63,0.67,0.73,0.77', text: 'Fill it with life,' },
   { range: '0.77,0.80,0.85,0.88', text: 'Light it up,' },
 ];
-const steps = ['Wireframe', 'Materials', 'Populate', 'Lighting', 'Play'];
+const steps = ['Blockout', 'Model', 'Texture', 'Animate', 'VFX', 'Ship to mobile'];
 ---
 <section class="intro" id="intro" aria-labelledby="intro-title">
   <h1 id="intro-title" class="sr-only">{site.name}: {site.tagline}</h1>
@@ -21,7 +21,7 @@ const steps = ['Wireframe', 'Materials', 'Populate', 'Lighting', 'Play'];
     <div class="editor" id="editor" aria-hidden="true">
       <div class="wrap">
         <div class="panel">
-          <h3>new_world.scene</h3>
+          <h3>loot_chest.prefab</h3>
           <ol id="steps">
             {steps.map((s, i) => <li><b>{String(i + 1).padStart(2, '0')}</b>{s}</li>)}
           </ol>
@@ -30,8 +30,8 @@ const steps = ['Wireframe', 'Materials', 'Populate', 'Lighting', 'Play'];
           <h3>Stats</h3>
           <dl class="stats">
             <dt>Triangles</dt><dd id="sTris">0</dd>
-            <dt>Entities</dt><dd id="sEnt">0</dd>
-            <dt>Lights</dt><dd id="sLights">0</dd>
+            <dt>Keyframes</dt><dd id="sEnt">0</dd>
+            <dt>Particles</dt><dd id="sLights">0</dd>
             <dt>Build</dt><dd id="sBuild">0%</dd>
           </dl>
         </div>

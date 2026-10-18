@@ -1,6 +1,9 @@
-// Scroll-driven homepage intro: the Loot Lab badge is a window onto a game
-// world that builds itself (wireframe, materials, life, lighting) as you scroll.
+// Scroll-driven homepage intro: the Loot Lab badge is a window onto a 3D
+// workshop where a treasure chest is made from nothing (blockout, model,
+// texture, animation, VFX) and finally lands in a mobile game on an iPhone.
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 if (reduce) document.documentElement.classList.add('static');
@@ -15,188 +18,425 @@ const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const range = (v, a, b) => clamp((v - a) / (b - a));
 const ease = (t) => (t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+const easeOutBack = (t) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
 const lerp = (a, b, t) => a + (b - a) * t;
+const hash = (x, y) => { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); };
 
 // Scroll timeline (fractions of the pinned intro).
-const T = { zoom: [0.06, 0.31], rise: [0.0, 0.26], mat: [0.47, 0.62], life: [0.62, 0.76], light: [0.76, 0.9] };
+const T = {
+  zoom: [0.06, 0.31],   // through the badge
+  block: [0.0, 0.28],   // blockout cube grows
+  model: [0.33, 0.47],  // detailed parts snap in
+  tex: [0.49, 0.61],    // materials sweep up the model
+  anim: [0.63, 0.775],  // squash-and-stretch jiggle
+  open: [0.785, 0.83],  // lid pops open
+  vfx: [0.785, 0.9],    // coins, light and sparkles
+  phone: [0.86, 0.95],  // the chest lands in the game on an iPhone
+};
 
-/* ---------------- 3D world ---------------- */
+/* ---------------- Renderer and scene ---------------- */
 const renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, innerWidth < 900 ? 1.5 : 1.75));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.localClippingEnabled = true;
 
 const scene = new THREE.Scene();
-const INK = new THREE.Color('#0f1424'), DUSK = new THREE.Color('#24365f'), GOLDEN = new THREE.Color('#4b3f7d');
+const INK = new THREE.Color('#0b0f1c'), WARM = new THREE.Color('#1c1430'), DUSK = new THREE.Color('#141a33');
 scene.background = INK.clone();
-scene.fog = new THREE.Fog(INK.clone(), 40, 120);
-const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 400);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.75;
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 200);
 
-// Deterministic value noise so the island is identical on every visit.
-const hash = (x, y) => { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); };
-const smooth = (t) => t * t * (3 - 2 * t);
-function noise(x, y) {
-  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
-  const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
-  const u = smooth(xf), v = smooth(yf);
-  return lerp(lerp(a, b, u), lerp(c, d, u), v);
+const hemi = new THREE.HemisphereLight('#c9d6ff', '#2a1c14', .55);
+const key = new THREE.DirectionalLight('#fff1dc', 2.3); key.position.set(4, 6, 5);
+const rim = new THREE.DirectionalLight('#5fe3ff', 1.4); rim.position.set(-5, 3, -4);
+scene.add(hemi, key, rim);
+
+function canvasTex(w, h, draw) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return t;
 }
-const fbm = (x, y) => { let v = 0, amp = .5, f = 1; for (let o = 0; o < 5; o++) { v += noise(x * f + 11, y * f + 7) * amp; amp *= .5; f *= 2.03; } return v; };
-const SIZE = 44, SEG = 110;
-function heightAt(x, z) {
-  const r = Math.hypot(x * 0.95, z * 1.1) / (SIZE * 0.42);
-  const fall = Math.pow(clamp(1 - r), 1.3);
-  const ridge = Math.pow(fbm(x * 0.07, z * 0.07), 1.6);
-  return (ridge * 14 + 0.6) * fall - 1.1;
-}
-
-// Flat-shaded terrain: non-indexed so every face gets its own colour.
-const base = new THREE.PlaneGeometry(SIZE, SIZE, SEG, SEG).toNonIndexed();
-base.rotateX(-Math.PI / 2);
-const pos = base.attributes.position;
-for (let i = 0; i < pos.count; i++) pos.setY(i, heightAt(pos.getX(i), pos.getZ(i)));
-base.computeVertexNormals();
-const faceColor = new Float32Array(pos.count * 3);
-const faceDist = new Float32Array(pos.count);
-const SAND = new THREE.Color('#e9d49b'), GRASS = new THREE.Color('#5cb85a'), GRASS2 = new THREE.Color('#3f9a4f'), ROCK = new THREE.Color('#8b90a3'), SNOW = new THREE.Color('#f3f5fb'), SEABED = new THREE.Color('#2c4a6e');
-for (let f = 0; f < pos.count; f += 3) {
-  let h = 0, cx = 0, cz = 0;
-  for (let k = 0; k < 3; k++) { h += pos.getY(f + k); cx += pos.getX(f + k); cz += pos.getZ(f + k); }
-  h /= 3; cx /= 3; cz /= 3;
-  const c = h < -0.3 ? SEABED : h < 0.35 ? SAND : h < 3.2 ? (hash(cx, cz) > .5 ? GRASS : GRASS2) : h < 6.2 ? ROCK : SNOW;
-  const d = Math.hypot(cx, cz);
-  for (let k = 0; k < 3; k++) { faceColor.set([c.r, c.g, c.b], (f + k) * 3); faceDist[f + k] = d; }
-}
-const colors = new Float32Array(pos.count * 3);
-base.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-const terrain = new THREE.Group();
-const solid = new THREE.Mesh(base, new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: .92, metalness: 0, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 }));
-const wireMat = new THREE.MeshBasicMaterial({ color: '#3fe0c5', wireframe: true, transparent: true, opacity: .45 });
-const wire = new THREE.Mesh(base, wireMat);
-terrain.add(solid, wire);
-scene.add(terrain);
-
-const grid = new THREE.GridHelper(220, 110, '#3fe0c5', '#2a3a66');
-grid.material.transparent = true; grid.material.opacity = .35;
-grid.position.y = -1.12;
-scene.add(grid);
-
-// Expanding scan ring that paints materials across the terrain.
-const ring = new THREE.Mesh(new THREE.RingGeometry(0.98, 1, 128), new THREE.MeshBasicMaterial({ color: '#3fe0c5', transparent: true, opacity: .9, side: THREE.DoubleSide }));
-ring.rotation.x = -Math.PI / 2; ring.position.y = 0.2;
-scene.add(ring);
-
-// Editor gizmo and selection box.
-const gizmo = new THREE.Group();
-const axis = (dir, color) => new THREE.ArrowHelper(dir, new THREE.Vector3(), 5, color, 1.1, .6);
-gizmo.add(axis(new THREE.Vector3(1, 0, 0), '#ff5a6a'), axis(new THREE.Vector3(0, 1, 0), '#7be37b'), axis(new THREE.Vector3(0, 0, 1), '#5aa9ff'));
-gizmo.position.set(0, heightAt(0, 0) + 1.5, 0);
-scene.add(gizmo);
-const box = new THREE.Box3(new THREE.Vector3(-SIZE * .42, -1.2, -SIZE * .38), new THREE.Vector3(SIZE * .42, 10, SIZE * .38));
-const selection = new THREE.Box3Helper(box, '#3fe0c5');
-selection.material.transparent = true;
-scene.add(selection);
-
-// Water.
-const water = new THREE.Mesh(new THREE.PlaneGeometry(400, 400, 1, 1), new THREE.MeshStandardMaterial({ color: '#2f86d6', roughness: .25, metalness: .2, transparent: true, opacity: .82 }));
-water.rotation.x = -Math.PI / 2;
-scene.add(water);
-
-// Trees and loot crates, placed deterministically on suitable ground.
-const spots = [];
-for (let i = 0; i < 4000 && spots.length < 170; i++) {
-  const x = (hash(i, 1.3) - .5) * SIZE * .8, z = (hash(i, 7.7) - .5) * SIZE * .8, h = heightAt(x, z);
-  if (h > 0.55 && h < 3.4 && hash(i, 3.1) > .35) spots.push({ x, z, h, d: Math.hypot(x, z), s: .7 + hash(i, 9.2) * .7, r: hash(i, 4.4) * 6.28 });
-}
-const treeGeo = new THREE.ConeGeometry(.55, 1.7, 6); treeGeo.translate(0, 1.25, 0);
-const trunkGeo = new THREE.CylinderGeometry(.12, .16, .5, 5); trunkGeo.translate(0, .25, 0);
-const trees = new THREE.InstancedMesh(treeGeo, new THREE.MeshStandardMaterial({ color: '#2f8a45', flatShading: true, roughness: .9 }), spots.length);
-const trunks = new THREE.InstancedMesh(trunkGeo, new THREE.MeshStandardMaterial({ color: '#7a5434', flatShading: true }), spots.length);
-scene.add(trees, trunks);
-const crateSpots = [[-6, 4], [7, -3], [2, 8], [-9, -6], [11, 5], [-2, -10]].map(([x, z]) => ({ x, z, h: Math.max(heightAt(x, z), 0.2) }));
-const crateMat = new THREE.MeshStandardMaterial({ color: '#ffc83d', emissive: '#ffb21a', emissiveIntensity: 0, roughness: .5 });
-const crates = crateSpots.map((c) => { const m = new THREE.Mesh(new THREE.BoxGeometry(.9, .9, .9), crateMat); scene.add(m); return m; });
-const crateLights = crateSpots.slice(0, 3).map(() => { const l = new THREE.PointLight('#ffbf47', 0, 9, 2); scene.add(l); return l; });
-
-const hemi = new THREE.HemisphereLight('#bcd2ff', '#20263a', .25);
-const sun = new THREE.DirectionalLight('#ffffff', .3);
-sun.position.set(-20, 30, 10);
-scene.add(hemi, sun);
-
-const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), v3 = new THREE.Vector3(), sc = new THREE.Vector3();
-let lastMat = -1;
-function updateWorld(p, time) {
-  // Starts part-raised so peaks already show through the title letters.
-  const rise = lerp(0.4, 1, ease(range(p, ...T.rise)));
-  const mat = range(p, ...T.mat);
-  const life = range(p, ...T.life);
-  const light = ease(range(p, ...T.light));
-
-  terrain.scale.y = Math.max(0.02, rise);
-  terrain.position.y = (1 - rise) * -1.1;
-
-  // Paint faces as the scan ring passes.
-  const R = mat * SIZE * 0.62;
-  if (Math.abs(R - lastMat) > 0.01) {
-    for (let i = 0; i < pos.count; i++) {
-      const t = clamp((R - faceDist[i]) / 2.5);
-      colors[i * 3] = lerp(0.07, faceColor[i * 3], t);
-      colors[i * 3 + 1] = lerp(0.09, faceColor[i * 3 + 1], t);
-      colors[i * 3 + 2] = lerp(0.16, faceColor[i * 3 + 2], t);
+// Hand-painted style wood planks with grain; `vertical` runs the planks along the lid.
+function woodPlanks(vertical) {
+  return canvasTex(512, 512, (g, w, h) => {
+    const n = 4, L = vertical ? w : h, M = vertical ? h : w;
+    for (let i = 0; i < n; i++) {
+      const tone = .82 + hash(i, vertical ? 3 : 1) * .3;
+      g.fillStyle = `rgb(${Math.round(156 * tone)},${Math.round(90 * tone)},${Math.round(46 * tone)})`;
+      vertical ? g.fillRect(i * w / n, 0, w / n, h) : g.fillRect(0, i * h / n, w, h / n);
     }
-    base.attributes.color.needsUpdate = true;
-    lastMat = R;
+    g.lineWidth = 1.6;
+    for (let k = 0; k < 150; k++) {
+      const o = hash(k, 7.3) * L;
+      g.strokeStyle = `rgba(70,32,12,${.1 + hash(k, 2.2) * .2})`;
+      g.beginPath();
+      for (let s = 0; s <= 32; s++) {
+        const a = s / 32 * M, b = o + Math.sin(s * .5 + k) * 2.5 + Math.sin(s * .13 + k * 3) * 6;
+        vertical ? (s ? g.lineTo(b, a) : g.moveTo(b, a)) : (s ? g.lineTo(a, b) : g.moveTo(a, b));
+      }
+      g.stroke();
+    }
+    g.fillStyle = 'rgba(38,16,6,.9)';
+    for (let i = 0; i <= n; i++) vertical ? g.fillRect(i * w / n - 4, 0, 8, h) : g.fillRect(0, i * h / n - 4, w, 8);
+  });
+}
+const radial = (inner, outer) => canvasTex(128, 128, (g, w) => {
+  const gr = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+  gr.addColorStop(0, inner); gr.addColorStop(1, outer);
+  g.fillStyle = gr; g.fillRect(0, 0, w, w);
+});
+const starTex = canvasTex(64, 64, (g) => {
+  g.fillStyle = '#fff'; g.beginPath();
+  g.moveTo(32, 0); g.quadraticCurveTo(32, 32, 64, 32); g.quadraticCurveTo(32, 32, 32, 64);
+  g.quadraticCurveTo(32, 32, 0, 32); g.quadraticCurveTo(32, 32, 32, 0); g.fill();
+});
+
+/* ---------------- The chest ---------------- */
+const CW = 2.6, CH = 1.3, CD = 1.7, R = CD / 2;
+const chest = new THREE.Group(); scene.add(chest);       // placement in the world
+const rig = new THREE.Group(); chest.add(rig);           // squash and stretch
+const lidPivot = new THREE.Group(); lidPivot.position.set(0, CH, -R); rig.add(lidPivot);
+const lid = new THREE.Group(); lid.position.set(0, 0, R); lidPivot.add(lid);
+
+// Materials are revealed by a plane sweeping upwards: solid below it, wireframe above.
+const solidPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), -10);
+const wirePlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 10);
+const clip = { clippingPlanes: [solidPlane] };
+const woodMat = new THREE.MeshStandardMaterial({ map: woodPlanks(false), roughness: .8, ...clip });
+const lidWoodMat = new THREE.MeshStandardMaterial({ map: woodPlanks(true), roughness: .8, side: THREE.DoubleSide, ...clip });
+const innerMat = new THREE.MeshStandardMaterial({ color: '#2b160a', roughness: .95, ...clip });
+const goldMat = new THREE.MeshStandardMaterial({ color: '#ffc451', metalness: 1, roughness: .27, side: THREE.DoubleSide, ...clip });
+const darkMat = new THREE.MeshStandardMaterial({ color: '#140a04', roughness: .6, ...clip });
+const wireMat = new THREE.MeshBasicMaterial({ color: '#3fe0c5', wireframe: true, transparent: true, opacity: .55, depthWrite: false, clippingPlanes: [wirePlane] });
+
+const parts = [];
+function part(geo, mat, parent, order, pos = [0, 0, 0], rot = [0, 0, 0]) {
+  const g = new THREE.Group(); g.position.set(...pos); g.rotation.set(...rot); parent.add(g);
+  g.add(new THREE.Mesh(geo, mat), new THREE.Mesh(geo, wireMat));
+  const tris = (geo.index ? geo.index.count : geo.attributes.position.count) / 3;
+  parts.push({ g, order, tris });
+}
+const lidShell = (r, len, segs = 40) => { const g = new THREE.CylinderGeometry(r, r, len, segs, 4, true, 0, Math.PI); g.rotateZ(Math.PI / 2); return g; };
+const halfDisc = (side) => { const g = new THREE.CircleGeometry(R, 40, 0, Math.PI); g.rotateY(side * Math.PI / 2); return g; };
+
+// 0: body and lid
+part(new THREE.BoxGeometry(CW, CH, CD, 4, 3, 3), [woodMat, woodMat, innerMat, woodMat, woodMat, woodMat], rig, 0, [0, CH / 2, 0]);
+part(lidShell(R, CW), lidWoodMat, lid, 0);
+part(halfDisc(1), lidWoodMat, lid, 0, [CW / 2, 0, 0]);
+part(halfDisc(-1), lidWoodMat, lid, 0, [-CW / 2, 0, 0]);
+// 1: metal straps over body and lid
+for (const x of [-0.78, 0.78]) {
+  part(new THREE.BoxGeometry(.22, CH, .05), goldMat, rig, 1, [x, CH / 2, R + .025]);
+  part(new THREE.BoxGeometry(.22, CH, .05), goldMat, rig, 1, [x, CH / 2, -R - .025]);
+  part(lidShell(R + .03, .22), goldMat, lid, 1, [x, 0, 0]);
+}
+// 2: rims and corner caps
+for (const y of [.07, CH - .06]) {
+  part(new THREE.BoxGeometry(CW + .06, .12, .06), goldMat, rig, 2, [0, y, R + .03]);
+  part(new THREE.BoxGeometry(CW + .06, .12, .06), goldMat, rig, 2, [0, y, -R - .03]);
+  part(new THREE.BoxGeometry(.06, .12, CD + .06), goldMat, rig, 2, [CW / 2 + .03, y, 0]);
+  part(new THREE.BoxGeometry(.06, .12, CD + .06), goldMat, rig, 2, [-CW / 2 - .03, y, 0]);
+}
+for (const x of [-1, 1]) for (const z of [-1, 1]) part(new THREE.BoxGeometry(.14, CH + .02, .14), goldMat, rig, 2, [x * CW / 2, CH / 2, z * R]);
+part(new THREE.BoxGeometry(CW + .06, .1, .07), goldMat, lid, 2, [0, .05, R + .02]);
+// 3: lock and hasp
+part(new THREE.BoxGeometry(.46, .52, .09), goldMat, rig, 3, [0, CH - .2, R + .06]);
+part(new THREE.CylinderGeometry(.06, .06, .03, 20).rotateX(Math.PI / 2), darkMat, rig, 3, [0, CH - .14, R + .11]);
+part(new THREE.BoxGeometry(.05, .12, .03), darkMat, rig, 3, [0, CH - .23, R + .11]);
+part(new THREE.BoxGeometry(.26, .32, .07), goldMat, lid, 3, [0, .13, R + .04]);
+const chestTris = parts.reduce((s, p) => s + p.tris, 0);
+
+// Treasure inside: a mound of coins and a few gems.
+const coinGeo = new THREE.CylinderGeometry(.15, .15, .04, 24);
+const coinMat = new THREE.MeshStandardMaterial({ color: '#ffcb4a', metalness: 1, roughness: .22, emissive: '#ff9a1a', emissiveIntensity: .12 });
+const treasure = new THREE.Group(); rig.add(treasure);
+const PILE = 110, pile = new THREE.InstancedMesh(coinGeo, coinMat, PILE);
+const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e3 = new THREE.Euler(), v3 = new THREE.Vector3(), sc = new THREE.Vector3();
+for (let i = 0; i < PILE; i++) {
+  const x = (hash(i, 1.1) - .5) * (CW - .4), z = (hash(i, 2.7) - .5) * (CD - .35);
+  const mound = .38 * Math.max(0, 1 - (x / 1.25) ** 2 - (z / .8) ** 2);
+  e3.set((hash(i, 3.3) - .5) * .9, hash(i, 4.4) * 6.28, (hash(i, 5.5) - .5) * .9);
+  m4.compose(v3.set(x, CH + .02 + mound * hash(i, 6.6), z), q.setFromEuler(e3), sc.set(1, 1, 1));
+  pile.setMatrixAt(i, m4);
+}
+treasure.add(pile);
+const gemMat = (c) => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: .45, metalness: .1, roughness: .1, flatShading: true });
+[[-.55, .2, '#3fe0c5', .2], [.5, -.15, '#9b7bff', .17], [.05, .25, '#ff5d8f', .14], [.85, .3, '#3fe0c5', .12]].forEach(([x, z, c, s], i) => {
+  const gem = new THREE.Mesh(new THREE.OctahedronGeometry(s), gemMat(c));
+  gem.position.set(x, CH + .3, z); gem.rotation.set(.3 * i, i, .2); gem.scale.y = 1.4;
+  treasure.add(gem);
+});
+
+// Light from inside the chest.
+const glowLight = new THREE.PointLight('#ffbf47', 0, 7, 2); glowLight.position.set(0, CH + .6, 0); rig.add(glowLight);
+const glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: radial('rgba(255,214,120,1)', 'rgba(255,170,40,0)'), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, opacity: 0 }));
+glowSprite.position.set(0, CH + .5, 0); glowSprite.scale.set(4.2, 3.4, 1); rig.add(glowSprite);
+const beamAlpha = canvasTex(4, 256, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#000'); gr.addColorStop(1, '#fff'); g.fillStyle = gr; g.fillRect(0, 0, w, h); });
+const beam = new THREE.Mesh(new THREE.CylinderGeometry(1.35, .95, 3.6, 48, 1, true), new THREE.MeshBasicMaterial({ color: '#ffd27a', alphaMap: beamAlpha, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+beam.position.set(0, CH + 1.85, 0); rig.add(beam);
+
+// Sparkles around the open chest.
+const sparkGeo = new THREE.BufferGeometry();
+const SPARKS = 150, sp3 = new Float32Array(SPARKS * 3);
+for (let i = 0; i < SPARKS; i++) {
+  const a = hash(i, 9.1) * 6.28, r = 1.2 + hash(i, 8.2) * 2.4;
+  sp3.set([Math.cos(a) * r, .3 + hash(i, 7.3) * 3.6, Math.sin(a) * r], i * 3);
+}
+sparkGeo.setAttribute('position', new THREE.BufferAttribute(sp3, 3));
+const sparkMat = new THREE.PointsMaterial({ map: starTex, color: '#ffe3a1', size: .16, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+const sparks = new THREE.Points(sparkGeo, sparkMat); chest.add(sparks);
+
+// Coins that burst out when the lid pops (in world space).
+const BURST = 42, burst = new THREE.InstancedMesh(coinGeo, coinMat, BURST);
+burst.frustumCulled = false; scene.add(burst);
+const burstSeeds = Array.from({ length: BURST }, (_, i) => ({
+  a: i / BURST * 6.28 + hash(i, .7), vy: 4.6 + hash(i, 1.9) * 2.6, vh: 1.1 + hash(i, 2.8) * 1.8, spin: 6 + hash(i, 3.6) * 10, delay: hash(i, 4.2) * .12,
+}));
+
+/* ---------------- Editor chrome ---------------- */
+const proxyMat = new THREE.MeshBasicMaterial({ color: '#3fe0c5', wireframe: true, transparent: true, opacity: .6, depthWrite: false });
+const proxy = new THREE.Mesh(new THREE.BoxGeometry(CW, CH + R, CD, 3, 3, 3), proxyMat);
+const proxyTris = 12 * 9;
+scene.add(proxy);
+const gizmo = new THREE.Group();
+const axis = (dir, color) => new THREE.ArrowHelper(dir, new THREE.Vector3(), 1.3, color, .32, .17);
+gizmo.add(axis(new THREE.Vector3(1, 0, 0), '#ff5a6a'), axis(new THREE.Vector3(0, 1, 0), '#7be37b'), axis(new THREE.Vector3(0, 0, 1), '#5aa9ff'));
+gizmo.position.set(0, CH + R + .35, 0); scene.add(gizmo);
+const selection = new THREE.Box3Helper(new THREE.Box3(new THREE.Vector3(-CW / 2 - .15, -.02, -R - .15), new THREE.Vector3(CW / 2 + .15, CH + R + .15, R + .15)), '#3fe0c5');
+selection.material.transparent = true; scene.add(selection);
+const grid = new THREE.GridHelper(10, 20, '#3fe0c5', '#26355c');
+grid.material.transparent = true; grid.material.depthWrite = false; scene.add(grid);
+const scanPts = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([x, z]) => new THREE.Vector3(x * (CW / 2 + .2), 0, z * (R + .2)));
+const scan = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(scanPts), new THREE.LineBasicMaterial({ color: '#c9fff5', transparent: true, blending: THREE.AdditiveBlending }));
+scene.add(scan);
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 3.4), new THREE.MeshBasicMaterial({ map: radial('rgba(0,0,0,.65)', 'rgba(0,0,0,0)'), transparent: true, depthWrite: false, opacity: 0 }));
+shadow.rotation.x = -Math.PI / 2; shadow.position.y = .005; chest.add(shadow);
+
+/* ---------------- The iPhone ---------------- */
+const PW = 3.2, PH = 6.6, PT = .34, SW = PW - .2, SH = PH - .2;
+const phone = new THREE.Group(); scene.add(phone);
+phone.add(new THREE.Mesh(new RoundedBoxGeometry(PW, PH, PT, 6, .46), new THREE.MeshStandardMaterial({ color: '#30364a', metalness: .9, roughness: .3 })));
+function roundedRect(w, h, r) {
+  const s = new THREE.Shape(), x = -w / 2, y = -h / 2;
+  s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r);
+  s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r);
+  s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y);
+  const g = new THREE.ShapeGeometry(s, 12), uv = g.attributes.uv, p = g.attributes.position;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, (p.getX(i) + w / 2) / w, (p.getY(i) + h / 2) / h);
+  return g;
+}
+const screenMat = new THREE.MeshBasicMaterial({ color: '#0b0f1c', toneMapped: false });
+const screenMesh = new THREE.Mesh(roundedRect(SW, SH, .38), screenMat);
+screenMesh.position.z = PT / 2 + .003; phone.add(screenMesh);
+const island = new THREE.Mesh(roundedRect(.92, .27, .135), new THREE.MeshBasicMaterial({ color: '#000' }));
+island.position.set(0, SH / 2 - .3, PT / 2 + .006); phone.add(island);
+for (const [y, h] of [[1.6, .5], [.9, .5]]) {
+  const b = new THREE.Mesh(new RoundedBoxGeometry(.06, h, .12, 2, .03), new THREE.MeshStandardMaterial({ color: '#2a2f40', metalness: .9, roughness: .35 }));
+  b.position.set(-PW / 2 - .02, y, 0); phone.add(b);
+}
+const phoneGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: radial('rgba(130,100,255,.55)', 'rgba(63,224,197,0)'), transparent: true, depthWrite: false, opacity: 0 }));
+phoneGlow.scale.set(11, 11, 1); phoneGlow.position.z = -1.2; phone.add(phoneGlow);
+const PEDESTAL_Y = -.92; // where the chest sits on the game screen (phone-local)
+
+// The mobile game UI drawn onto the screen.
+function drawScreen() {
+  screenMat.map = canvasTex(620, 1290, (g, w, h) => {
+    const F = (wgt, size) => `${wgt} ${size}px "Archivo Variable", system-ui, sans-serif`;
+    const bg = g.createLinearGradient(0, 0, 0, h);
+    bg.addColorStop(0, '#2c1e63'); bg.addColorStop(.55, '#173266'); bg.addColorStop(1, '#0b1630');
+    g.fillStyle = bg; g.fillRect(0, 0, w, h);
+    const cx = w / 2, cy = h * (.5 - PEDESTAL_Y / SH);
+    g.save(); g.translate(cx, cy);
+    for (let i = 0; i < 16; i++) { g.rotate(Math.PI * 2 / 16); g.fillStyle = 'rgba(255,220,140,.05)'; g.beginPath(); g.moveTo(0, 0); g.lineTo(-46, -h); g.lineTo(46, -h); g.fill(); }
+    g.restore();
+    const gl = g.createRadialGradient(cx, cy - 60, 0, cx, cy - 60, w * .75);
+    gl.addColorStop(0, 'rgba(255,200,90,.5)'); gl.addColorStop(.45, 'rgba(255,170,60,.12)'); gl.addColorStop(1, 'rgba(255,170,60,0)');
+    g.fillStyle = gl; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 70; i++) { g.fillStyle = `rgba(255,255,255,${.15 + hash(i, 4) * .5})`; g.beginPath(); g.arc(hash(i, 1) * w, hash(i, 2) * h * .5, 1 + hash(i, 3) * 1.8, 0, 7); g.fill(); }
+    // Status bar
+    g.fillStyle = '#fff'; g.textBaseline = 'middle'; g.font = F(700, 30); g.fillText('9:41', 58, 60);
+    g.strokeStyle = '#fff'; g.lineWidth = 3; g.beginPath(); g.roundRect(w - 108, 48, 48, 24, 7); g.stroke();
+    g.beginPath(); g.roundRect(w - 104, 52, 34, 16, 4); g.fill();
+    for (let i = 0; i < 4; i++) g.fillRect(w - 186 + i * 13, 70 - (i + 1) * 6, 8, (i + 1) * 6);
+    // Currency pills
+    const pill = (x, label, icon) => {
+      g.fillStyle = 'rgba(8,12,30,.55)'; g.beginPath(); g.roundRect(x, 118, 212, 62, 31); g.fill();
+      icon(x + 34, 149); g.fillStyle = '#fff'; g.font = F(800, 30); g.textAlign = 'left'; g.fillText(label, x + 66, 150);
+    };
+    pill(34, '12,480', (x, y) => { g.fillStyle = '#ffc83d'; g.beginPath(); g.arc(x, y, 20, 0, 7); g.fill(); g.fillStyle = '#e09a17'; g.beginPath(); g.arc(x, y, 12, 0, 7); g.fill(); });
+    pill(w - 246, '320', (x, y) => { g.fillStyle = '#3fe0c5'; g.beginPath(); g.moveTo(x, y - 22); g.lineTo(x + 18, y); g.lineTo(x, y + 22); g.lineTo(x - 18, y); g.fill(); });
+    // Title
+    g.textAlign = 'center';
+    g.font = F(900, 74); g.lineWidth = 12; g.strokeStyle = '#3a1d05'; g.strokeText('LOOT CHEST', cx, 292);
+    const tg = g.createLinearGradient(0, 256, 0, 330); tg.addColorStop(0, '#fff3c4'); tg.addColorStop(1, '#ffc23d');
+    g.fillStyle = tg; g.fillText('LOOT CHEST', cx, 292);
+    g.font = F(600, 30); g.fillStyle = 'rgba(255,255,255,.8)'; g.fillText('Daily reward unlocked!', cx, 362);
+    // Pedestal
+    const py = cy + 8;
+    g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(cx, py + 26, 236, 62, 0, 0, 7); g.fill();
+    const pg = g.createLinearGradient(0, py - 50, 0, py + 50); pg.addColorStop(0, '#4f6bc9'); pg.addColorStop(1, '#22306e');
+    g.fillStyle = pg; g.beginPath(); g.ellipse(cx, py, 224, 54, 0, 0, 7); g.fill();
+    g.strokeStyle = 'rgba(255,214,120,.9)'; g.lineWidth = 5; g.stroke();
+    // Rewards row
+    const items = [['x250', '#ffc83d'], ['x3', '#3fe0c5'], ['x1', '#ff5d8f']];
+    items.forEach(([t, c], i) => {
+      const x = cx + (i - 1) * 170 - 72, y = h * .77 - 72;
+      g.fillStyle = 'rgba(255,255,255,.1)'; g.beginPath(); g.roundRect(x, y, 144, 144, 28); g.fill();
+      g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = 2; g.stroke();
+      g.fillStyle = c; g.beginPath();
+      if (i === 0) g.arc(x + 72, y + 58, 26, 0, 7);
+      else if (i === 1) { g.moveTo(x + 72, y + 28); g.lineTo(x + 98, y + 58); g.lineTo(x + 72, y + 88); g.lineTo(x + 46, y + 58); }
+      else { for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, r = k % 2 ? 13 : 30; g.lineTo(x + 72 + Math.cos(a) * r, y + 58 + Math.sin(a) * r); } }
+      g.fill();
+      g.fillStyle = '#fff'; g.font = F(800, 28); g.fillText(t, x + 72, y + 116);
+    });
+    // Button
+    const by = h * .875 - 56;
+    g.fillStyle = '#7a4a07'; g.beginPath(); g.roundRect(cx - 214, by + 10, 428, 112, 56); g.fill();
+    const bg2 = g.createLinearGradient(0, by, 0, by + 112); bg2.addColorStop(0, '#ffe07a'); bg2.addColorStop(1, '#ffb52e');
+    g.fillStyle = bg2; g.beginPath(); g.roundRect(cx - 214, by, 428, 112, 56); g.fill();
+    g.fillStyle = '#3a1d05'; g.font = F(900, 44); g.fillText('COLLECT', cx, by + 58);
+    g.fillStyle = 'rgba(255,255,255,.85)'; g.beginPath(); g.roundRect(cx - 90, h - 34, 180, 9, 5); g.fill();
+  });
+  screenMat.color.set('#ffffff');
+  screenMat.needsUpdate = true;
+}
+
+/* ---------------- Per-frame update ---------------- */
+const tanHalf = () => Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+const fitDist = (h, w, fh, fw) => Math.max(h / (2 * fh * tanHalf()), w / (2 * fw * tanHalf() * camera.aspect));
+const camTarget = new THREE.Vector3(), anchor = new THREE.Vector3(), restQ = new THREE.Quaternion(), finalQ = new THREE.Quaternion(), yawQ = new THREE.Quaternion();
+const coinRest = new THREE.Vector3(0, CH + .3, 0);
+
+function updateWorld(p, time) {
+  const narrow = camera.aspect < .8;
+  const block = ease(range(p, ...T.block));
+  const tex = ease(range(p, ...T.tex));
+  const open = range(p, ...T.open);
+  const vfx = ease(range(p, T.open[0], T.open[0] + .04));
+  const ph = ease(range(p, ...T.phone));
+  const texDone = p >= T.tex[1];
+
+  // Blockout: a single primitive, the editor gizmo and a selection box.
+  const proxyFade = 1 - range(p, T.model[0], T.model[0] + .05);
+  proxy.visible = proxyFade > .01;
+  proxy.scale.set(1, lerp(.35, 1, block), 1);
+  proxy.position.y = (CH + R) * proxy.scale.y / 2;
+  proxyMat.opacity = .6 * proxyFade;
+  const chrome = (1 - range(p, T.tex[0], T.tex[0] + .05)) * (.4 + .6 * block);
+  gizmo.visible = selection.visible = chrome > .01;
+  gizmo.scale.setScalar(Math.max(.001, chrome));
+  gizmo.rotation.y = time * .3;
+  gizmo.position.y = (CH + R) * proxy.scale.y + .3;
+  selection.material.opacity = chrome;
+  grid.material.opacity = .32 * (1 - range(p, T.tex[0], T.tex[1]));
+  grid.visible = grid.material.opacity > .01;
+
+  // Model: detailed parts snap in, in order.
+  let tris = proxy.visible ? proxyTris : 0;
+  for (const part of parts) {
+    const t = range(p, T.model[0] + part.order * .025, T.model[0] + part.order * .025 + .045);
+    part.g.scale.setScalar(Math.max(.0001, easeOutBack(t)));
+    part.g.visible = t > 0;
+    if (t > 0) tris += part.tris;
   }
-  ring.scale.setScalar(Math.max(R, 0.01));
-  ring.material.opacity = mat > 0 && mat < 1 ? .9 : 0;
-  wireMat.opacity = .45 * (1 - ease(range(p, T.mat[0] + .04, T.mat[1] + .02))) + .02;
-  gizmo.scale.setScalar(Math.max(0.001, rise * (1 - range(p, T.mat[0], T.mat[0] + .06))));
-  gizmo.rotation.y = time * .25;
-  selection.material.opacity = rise * (1 - range(p, T.mat[0], T.mat[0] + .06));
-  selection.visible = selection.material.opacity > .01;
-  grid.material.opacity = .35 * (1 - range(p, T.life[0], T.life[0] + .06));
 
-  water.position.y = lerp(-2.2, 0.05, ease(range(p, T.life[0], T.life[0] + .07))) + Math.sin(time * .8) * .03;
-  water.visible = p > T.life[0];
+  // Texture: a scan line sweeps up, painting materials and erasing the wireframe.
+  const level = p < T.tex[0] ? -.3 : texDone ? 60 : lerp(-.3, CH + R + .35, tex);
+  solidPlane.constant = level; wirePlane.constant = -level;
+  wireMat.visible = !texDone;
+  scan.visible = p > T.tex[0] && !texDone;
+  scan.position.y = level;
+  treasure.visible = texDone;
+  shadow.material.opacity = .9 * range(p, T.tex[0], T.tex[1]);
 
-  spots.forEach((s, i) => {
-    const g = easeOut(clamp(life * 1.5 - (s.d / (SIZE * .45)) * .5));
-    q.setFromAxisAngle(v3.set(0, 1, 0), s.r);
-    sc.setScalar(Math.max(0.0001, g * s.s));
-    m4.compose(v3.set(s.x, s.h * rise - .15, s.z), q, sc);
-    trees.setMatrixAt(i, m4); trunks.setMatrixAt(i, m4);
+  // Animate: squash, stretch and rattle, building up to the pop.
+  const amp = reduce ? 0 : range(p, T.anim[0], T.anim[0] + .03) * (1 - range(p, T.open[0] - .005, T.open[0] + .01)) * (.45 + .55 * range(p, ...T.anim));
+  const wob = Math.sin(time * 10);
+  const pop = Math.sin(range(p, T.open[0], T.open[0] + .03) * Math.PI);
+  rig.scale.set(1 - .05 * amp * wob + .08 * pop, 1 + .09 * amp * wob - .14 * pop, 1 - .05 * amp * wob + .08 * pop);
+  rig.position.y = Math.abs(Math.sin(time * 5)) * .22 * amp;
+  rig.rotation.z = Math.sin(time * 5) * .06 * amp;
+  const rattle = Math.max(0, Math.sin(time * 19)) * .14 * amp;
+
+  // VFX: lid pops, light pours out, coins burst and sparkles drift.
+  lidPivot.rotation.x = -(1.95 * easeOutBack(open) + rattle);
+  glowLight.intensity = 22 * vfx;
+  glowSprite.material.opacity = .85 * vfx;
+  beam.material.opacity = .55 * vfx * (1 - range(p, T.phone[0], T.phone[0] + .04));
+  beam.visible = beam.material.opacity > .01;
+  sparkMat.opacity = vfx;
+  sparks.rotation.y = time * .12;
+  // Long enough for every coin to land; any still airborne vanish as the phone arrives.
+  const bt = range(p, ...T.vfx) * 3.2;
+  const burstOn = p < T.phone[0] + .03;
+  let flying = 0;
+  burstSeeds.forEach((s, i) => {
+    const t = Math.max(0, bt - s.delay);
+    const y = coinRest.y + s.vy * t - 4.9 * t * t;
+    const live = burstOn && t > 0 && y > -.3;
+    if (live) flying++;
+    m4.compose(
+      v3.set(Math.cos(s.a) * s.vh * t, y, Math.sin(s.a) * s.vh * t),
+      q.setFromEuler(e3.set(t * s.spin, s.a, t * s.spin * .6)),
+      sc.setScalar(live ? 1 : .0001),
+    );
+    burst.setMatrixAt(i, m4);
   });
-  trees.instanceMatrix.needsUpdate = true; trunks.instanceMatrix.needsUpdate = true;
+  burst.instanceMatrix.needsUpdate = true;
 
-  crates.forEach((m, i) => {
-    const c = crateSpots[i];
-    const g = easeOut(clamp(life * 1.4 - .3 - i * .06));
-    m.scale.setScalar(Math.max(0.0001, g));
-    m.position.set(c.x, c.h * rise + .55 + Math.sin(time * 1.6 + i) * .12 * g, c.z);
-    m.rotation.y = time * .6 + i;
-  });
-  crateMat.emissiveIntensity = .15 + light * 1.4;
-  crateLights.forEach((l, i) => { const c = crateSpots[i]; l.position.set(c.x, c.h + 1.4, c.z); l.intensity = light * 14; });
+  // Lighting mood shifts warmer once the chest opens.
+  const bg = INK.clone().lerp(WARM, vfx * (1 - ph)).lerp(DUSK, ph);
+  scene.background.copy(bg);
+  hemi.intensity = lerp(.55, .8, vfx);
 
-  hemi.intensity = lerp(.25, .55, ease(mat)) + light * .5;
-  sun.intensity = lerp(.3, 1.4, ease(mat)) + light * 1.4;
-  sun.color.set('#ffffff').lerp(new THREE.Color('#ffd0a0'), light);
-  sun.position.set(lerp(-20, 26, light), lerp(30, 12, light), lerp(10, -14, light));
-  const bg = INK.clone().lerp(DUSK, ease(range(p, T.mat[0], T.life[1]))).lerp(GOLDEN, light * .8);
-  scene.background.copy(bg); scene.fog.color.copy(bg);
+  // Camera during the build: orbit from a three-quarter editor view towards the front.
+  const buildD = (narrow ? fitDist(2.6, 3.8, .4, .86) : fitDist(2.7, 3, .55, .45)) * lerp(1, 1.16, vfx);
+  const az = lerp(.8, .28, ease(range(p, 0, T.open[1]))) + (reduce ? 0 : Math.sin(time * .2) * .03);
+  const el = lerp(.5, .2, ease(range(p, .2, T.open[1])));
+  const buildTarget = new THREE.Vector3(narrow ? 0 : -.35, (CH + R) / 2 + (narrow ? -.55 : .1) + vfx * .4, 0);
 
-  // Camera: from a steep editor view down to a low hero angle.
-  const tilt = ease(range(p, 0.2, 0.95));
-  const ang = lerp(0.55, 2.25, ease(p)) + Math.sin(time * .15) * .02;
-  const narrow = camera.aspect < 0.8;
-  const rad = lerp(40, 31, tilt) * (narrow ? lerp(1.2, 1.9, tilt) : 1);
-  const hgt = narrow ? lerp(40, 17, tilt) : lerp(34, 9, tilt);
-  camera.position.set(Math.cos(ang) * rad, hgt, Math.sin(ang) * rad);
-  camera.lookAt(0, lerp(0, 2.2, tilt), 0);
+  // Final shot: the phone, facing the camera, to the right on wide screens and high on phones.
+  const phoneD = narrow ? fitDist(PH, PW, .5, .74) : fitDist(PH, PW, .8, .3);
+  const hh = phoneD * tanHalf(), hw = hh * camera.aspect;
+  const phoneHome = new THREE.Vector3(narrow ? 0 : hw * .42, narrow ? hh * .3 : 0, 0);
+  const rise = easeOut(range(p, T.phone[0], T.phone[0] + .065));
+  phone.visible = p > T.phone[0];
+  phone.position.copy(phoneHome).add(v3.set(0, lerp(-(hh * 2 + PH), 0, rise) + (reduce ? 0 : Math.sin(time * .9) * .06), 0));
+  phone.rotation.set(.06 + (my - .4) * .12, -.3 + (mx - .5) * .3 + (reduce ? 0 : Math.sin(time * .5) * .03), 0);
+  phoneGlow.material.opacity = rise;
 
-  const ents = Math.round(spots.length * clamp(life * 1.5)) + crates.filter((m) => m.scale.x > .01).length;
-  return { tris: Math.round((pos.count / 3) * clamp(rise * 4)), ents, lights: 2 + (light > .02 ? crateLights.length : 0), build: Math.round(p * 100) };
+  // The chest shrinks and flies onto the game screen.
+  const move = ease(range(p, T.phone[0] + .02, T.phone[1]));
+  phone.updateMatrixWorld();
+  anchor.set(0, PEDESTAL_Y, PT / 2 + .55);
+  phone.localToWorld(anchor);
+  chest.position.lerpVectors(v3.set(0, 0, 0), anchor, move);
+  chest.scale.setScalar(lerp(1, .56, move));
+  finalQ.copy(phone.quaternion).multiply(yawQ.setFromAxisAngle(v3.set(0, 1, 0), -.45));
+  chest.quaternion.slerpQuaternions(restQ, finalQ, move);
+  shadow.visible = move < .5;
+
+  // Blend the camera between the two shots.
+  const buildPos = new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el)).multiplyScalar(buildD).add(buildTarget);
+  const finalPos = new THREE.Vector3(0, 0, phoneD);
+  camera.position.lerpVectors(buildPos, finalPos, ph);
+  camTarget.lerpVectors(buildTarget, v3.set(0, 0, 0), ph);
+  camera.lookAt(camTarget);
+
+  return {
+    tris: Math.round(tris),
+    keys: Math.round(48 * range(p, ...T.anim)),
+    particles: p >= T.open[0] ? flying + SPARKS : 0,
+    build: Math.round(p * 100),
+  };
 }
 
 /* ---------------- Logo window ---------------- */
@@ -344,7 +584,7 @@ function drawKnock(z, time, wipe) {
 
 /* ---------------- Loop ---------------- */
 let sp = 0;
-const statEls = { tris: $('sTris'), ents: $('sEnt'), lights: $('sLights'), build: $('sBuild') };
+const statEls = { tris: $('sTris'), keys: $('sEnt'), particles: $('sLights'), build: $('sBuild') };
 // The finished world and its closing caption stay pinned for this many extra
 // screen heights, so visitors don't scroll straight past the call to action.
 const HOLD = 1.2;
@@ -370,11 +610,11 @@ function frame() {
     knock.style.visibility = z >= 1 ? 'hidden' : 'visible';
     hud.style.opacity = String(1 - range(sp, 0.02, 0.1));
     editor.style.opacity = String(range(sp, 0.27, 0.32) * (1 - range(sp, 0.86, 0.9)));
-    const stage = sp < T.mat[0] ? 0 : sp < T.life[0] ? 1 : sp < T.light[0] ? 2 : sp < 0.9 ? 3 : 4;
+    const stage = sp < T.model[0] ? 0 : sp < T.tex[0] ? 1 : sp < T.anim[0] ? 2 : sp < T.open[0] ? 3 : sp < T.phone[0] ? 4 : 5;
     stepEls.forEach((li, i) => { li.classList.toggle('on', i === stage); li.classList.toggle('done', i < stage); });
     statEls.tris.textContent = stats.tris.toLocaleString();
-    statEls.ents.textContent = stats.ents;
-    statEls.lights.textContent = stats.lights;
+    statEls.keys.textContent = stats.keys;
+    statEls.particles.textContent = stats.particles;
     statEls.build.textContent = stats.build + '%';
     for (const c of caps) {
       const [a, b, d, e] = c.r;
@@ -389,4 +629,5 @@ function frame() {
 }
 
 addEventListener('resize', layout);
+document.fonts.load('900 40px "Archivo Variable"').catch(() => {}).finally(drawScreen);
 logo.decode().catch(() => {}).finally(() => { analyseLogo(); layout(); requestAnimationFrame(frame); });
