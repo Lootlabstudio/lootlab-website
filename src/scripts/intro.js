@@ -266,7 +266,8 @@ phoneGlow.scale.set(11, 11, 1); phoneGlow.position.z = -1.2; phone.add(phoneGlow
 
 // The chest stands on a small 3D pedestal floating just off the glass, so it
 // always sits exactly in the middle of it.
-const PEDESTAL_Y = -.92, PEDESTAL_Z = PT / 2 + .62;
+// Far enough off the glass that the open lid never passes through the screen.
+const PEDESTAL_Y = -.92, PEDESTAL_Z = PT / 2 + 1.15;
 const pedestal = new THREE.Group();
 const pedInner = new THREE.Group(); pedInner.scale.z = .55; pedestal.add(pedInner);
 pedInner.add(new THREE.Mesh(new THREE.CylinderGeometry(1, 1.07, .14, 72), new THREE.MeshStandardMaterial({ color: '#3d58c4', metalness: .25, roughness: .35 })));
@@ -401,8 +402,10 @@ function updateWorld(p, time) {
   // Once on the phone the lid tilts back less, so it reads as a panel instead of an edge.
   const lidMax = lerp(1.95, 1.3, ease(range(p, T.phone[0] + .02, T.phone[1])));
   lidPivot.rotation.x = -(lidMax * easeOutBack(open) + rattle);
-  glowLight.intensity = 22 * vfx;
-  glowSprite.material.opacity = .85 * vfx;
+  // Softer glow once the chest is on the phone, so the lid's inside isn't washed out.
+  const onPhone = ease(range(p, T.phone[0] + .02, T.phone[1]));
+  glowLight.intensity = lerp(22, 9, onPhone) * vfx;
+  glowSprite.material.opacity = lerp(.85, .45, onPhone) * vfx;
   beam.material.opacity = .55 * vfx * (1 - range(p, T.phone[0], T.phone[0] + .04));
   beam.visible = beam.material.opacity > .01;
   sparkMat.opacity = vfx;
