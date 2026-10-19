@@ -1,5 +1,13 @@
 /* Featured game section and media showcase */
 .details { padding-block: 140px 120px; border-top: 1px solid var(--line); scroll-margin-top: 40px; }
+/* Centered section title flanked by thin rules with gold diamonds. */
+.featured-heading { display: flex; align-items: center; justify-content: center; gap: 22px; margin-bottom: 84px; font-stretch: 118%; font-weight: 800; font-size: clamp(30px, 3.4vw, 48px); line-height: 1; letter-spacing: -0.01em; text-align: center; }
+.featured-heading::before, .featured-heading::after { content: ""; flex: 0 1 140px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,200,61,.6)); }
+.featured-heading::after { transform: scaleX(-1); }
+.featured-heading span { position: relative; padding-inline: 26px; }
+.featured-heading span::before, .featured-heading span::after { content: ""; position: absolute; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 2px; background: var(--gold); transform: rotate(45deg); }
+.featured-heading span::before { left: 0; }
+.featured-heading span::after { right: 0; }
 .details .grid { display: grid; grid-template-columns: 1fr minmax(300px, 380px); gap: 72px; align-items: center; }
 .tilt { perspective: 900px; width: min(440px, 100%); }
 .tilt img { width: 100%; height: auto; transition: transform .2s ease-out; filter: drop-shadow(0 18px 40px rgba(0,0,0,.45)); }
@@ -26,6 +34,9 @@
 @media (max-width: 900px) {
   .details { padding-block: 96px 80px; }
   .details .grid { grid-template-columns: 1fr; gap: 44px; }
+  .featured-heading { margin-bottom: 52px; gap: 10px; font-size: 27px; white-space: nowrap; }
+  .featured-heading::before, .featured-heading::after { flex-basis: 32px; }
+  .featured-heading span { padding-inline: 18px; }
   .phone { width: min(320px, 82%); justify-self: center; }
   .loop { grid-template-columns: repeat(2, auto); }
   .showcase { margin-top: 72px; gap: 18px; }
