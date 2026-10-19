@@ -4,10 +4,10 @@ import { site } from '../data/site.js';
 
 // Captions fade in and out over the scroll timeline: [in-start, in-end, out-start, out-end].
 const captions = [
-  { range: '0.30,0.36,0.44,0.48', text: 'Every game starts as an idea,' },
-  { range: '0.48,0.52,0.59,0.63', text: 'And then design,' },
-  { range: '0.63,0.67,0.73,0.77', text: 'Fill it with life,' },
-  { range: '0.77,0.80,0.85,0.88', text: 'Light it up,' },
+  { range: '0.24,0.28,0.34,0.37', text: 'Every game starts as an idea,' },
+  { range: '0.37,0.40,0.45,0.48', text: 'And then design,' },
+  { range: '0.48,0.51,0.57,0.60', text: 'Fill it with life,' },
+  { range: '0.60,0.63,0.70,0.73', text: 'Light it up,' },
 ];
 const steps = ['Blockout', 'Model', 'Texture', 'Animate', 'VFX', 'Ship to mobile'];
 ---
@@ -48,7 +48,7 @@ const steps = ['Blockout', 'Model', 'Texture', 'Animate', 'VFX', 'Ship to mobile
     {captions.map((c) => (
       <div class="cap" data-cap={c.range}><div class="wrap"><p class="big">{c.text}</p></div></div>
     ))}
-    <div class="cap" data-cap="0.90,0.95,2,2" id="finale">
+    <div class="cap" data-cap="0.85,0.9,2,2" id="finale">
       <div class="wrap">
         <p class="big">And watch imagination become playable.</p>
         <div class="actions">

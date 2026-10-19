@@ -1,6 +1,6 @@
 /* Scroll-driven homepage intro */
 /* Includes 120vh of hold at the end (see HOLD in intro.js). */
-.intro { position: relative; height: 760vh; }
+.intro { position: relative; height: 900vh; }
 .stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--night); }
 .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(10,14,26,.55) 100%), linear-gradient(180deg, transparent 60%, rgba(10,14,26,.7)); }
@@ -35,7 +35,7 @@
 .meter { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--teal); transform-origin: left; transform: scaleX(0); }
 
 @media (max-width: 900px) {
-  .intro { height: 680vh; }
+  .intro { height: 820vh; }
   .hud { padding-bottom: 28px; }
   .hud .wrap { flex-direction: column; align-items: start; }
   .hud p { font-size: 17px; }

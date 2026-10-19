@@ -24,14 +24,14 @@ const hash = (x, y) => { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
 
 // Scroll timeline (fractions of the pinned intro).
 const T = {
-  zoom: [0.06, 0.31],   // through the badge
-  block: [0.0, 0.28],   // blockout cube grows
-  model: [0.33, 0.47],  // detailed parts snap in
-  tex: [0.49, 0.61],    // materials sweep up the model
-  anim: [0.63, 0.775],  // squash-and-stretch jiggle
-  open: [0.785, 0.83],  // lid pops open
-  vfx: [0.785, 0.9],    // coins, light and sparkles
-  phone: [0.86, 0.95],  // the chest lands in the game on an iPhone
+  zoom: [0.05, 0.24],   // through the badge
+  block: [0.0, 0.22],   // blockout cube grows
+  model: [0.26, 0.36],  // detailed parts snap in
+  tex: [0.38, 0.47],    // materials sweep up the model
+  anim: [0.49, 0.59],   // squash-and-stretch jiggle
+  open: [0.61, 0.65],   // lid pops open
+  vfx: [0.61, 0.74],    // coins, light and sparkles
+  phone: [0.72, 0.9],   // the chest lands in the game on an iPhone
 };
 
 /* ---------------- Renderer and scene ---------------- */
@@ -443,7 +443,7 @@ function updateWorld(p, time) {
   const phoneD = narrow ? fitDist(PH, PW, .5, .74) : fitDist(PH, PW, .8, .3);
   const hh = phoneD * tanHalf(), hw = hh * camera.aspect;
   const phoneHome = new THREE.Vector3(narrow ? 0 : hw * .42, narrow ? hh * .3 : 0, 0);
-  const rise = easeOut(range(p, T.phone[0], T.phone[0] + .065));
+  const rise = easeOut(range(p, T.phone[0], T.phone[0] + .08));
   phone.visible = p > T.phone[0];
   phone.position.copy(phoneHome).add(v3.set(0, lerp(-(hh * 2 + PH), 0, rise) + (reduce ? 0 : Math.sin(time * .9) * .06), 0));
   phone.rotation.set(.05 + (my - .4) * .1, -.16 + (mx - .5) * .22 + (reduce ? 0 : Math.sin(time * .5) * .025), 0);
@@ -643,11 +643,11 @@ function frame() {
     const stats = updateWorld(sp, time);
     renderer.render(scene, camera);
     const z = reduce ? 1 : range(sp, ...T.zoom);
-    if (z < 1) drawKnock(z, time, reduce ? 1 : range(sp, 0.004, 0.085));
+    if (z < 1) drawKnock(z, time, reduce ? 1 : range(sp, 0.004, 0.05));
     knock.style.opacity = String(1 - range(z, 0.86, 1));
     knock.style.visibility = z >= 1 ? 'hidden' : 'visible';
     hud.style.opacity = String(1 - range(sp, 0.02, 0.1));
-    editor.style.opacity = String(range(sp, 0.27, 0.32) * (1 - range(sp, 0.86, 0.9)));
+    editor.style.opacity = String(range(sp, 0.21, 0.25) * (1 - range(sp, 0.72, 0.76)));
     const stage = sp < T.model[0] ? 0 : sp < T.tex[0] ? 1 : sp < T.anim[0] ? 2 : sp < T.open[0] ? 3 : sp < T.phone[0] ? 4 : 5;
     stepEls.forEach((li, i) => { li.classList.toggle('on', i === stage); li.classList.toggle('done', i < stage); });
     statEls.tris.textContent = stats.tris.toLocaleString();
