@@ -60,7 +60,7 @@ dialog.trailer, dialog.viewer { padding: 0; border: 0; background: transparent; 
 dialog.trailer::backdrop, dialog.viewer::backdrop { background: rgba(5,8,16,.92); }
 dialog.trailer video { height: min(86vh, 900px); aspect-ratio: 9 / 16; border-radius: 20px; }
 dialog.viewer { max-width: 94vw; }
-dialog.viewer img { max-width: 92vw; max-height: 90vh; width: auto; height: auto; border-radius: 18px; }
+dialog.viewer img, dialog.viewer video { max-width: 92vw; max-height: 90vh; width: auto; height: auto; border-radius: 18px; }
 dialog.trailer [data-close], dialog.viewer [data-close] { position: absolute; top: 0; right: -58px; }
 
 @media (max-width: 900px) {

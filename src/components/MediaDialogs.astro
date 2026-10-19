@@ -6,7 +6,8 @@ const { game } = Astro.props;
   <video src={game.trailer.src} poster={game.trailer.poster} controls playsinline preload="none"></video>
   <button class="icon-btn" type="button" data-close aria-label="Close trailer">&#10005;</button>
 </dialog>
-<dialog class="viewer" aria-label="Image viewer">
+<dialog class="viewer" aria-label="Media viewer">
   <img alt="">
+  <video muted loop playsinline controls hidden></video>
   <button class="icon-btn" type="button" data-close aria-label="Close image">&#10005;</button>
 </dialog>

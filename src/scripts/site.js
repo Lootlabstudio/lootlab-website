@@ -12,6 +12,19 @@ document.querySelectorAll('video[data-loop]').forEach((v) => {
   v.play().catch(() => {});
 });
 
+// Gallery videos only download when they're about to scroll into view,
+// and pause again when they leave it.
+const lazyLoops = document.querySelectorAll('video[data-lazy-loop]');
+if (lazyLoops.length) {
+  const io = new IntersectionObserver((entries) => entries.forEach(({ target: v, isIntersecting }) => {
+    if (isIntersecting) {
+      if (!v.getAttribute('src')) v.src = v.dataset.lazyLoop;
+      if (!reduce) v.play().catch(() => {});
+    } else v.pause();
+  }), { rootMargin: '300px 0px' });
+  lazyLoops.forEach((v) => io.observe(v));
+}
+
 /* ---------------- Trailer lightbox ---------------- */
 const trailer = document.querySelector('dialog.trailer');
 if (trailer) {
@@ -30,7 +43,17 @@ if (trailer) {
 const viewer = document.querySelector('dialog.viewer');
 if (viewer) {
   const viewerImg = viewer.querySelector('img');
+  const viewerVideo = viewer.querySelector('video');
+  const showVideo = (on) => { viewerImg.hidden = on; viewerVideo.hidden = !on; };
+  document.querySelectorAll('[data-view-video]').forEach((btn) => btn.addEventListener('click', () => {
+    showVideo(true);
+    if (viewerVideo.getAttribute('src') !== btn.dataset.viewVideo) viewerVideo.src = btn.dataset.viewVideo;
+    viewer.showModal();
+    viewerVideo.play().catch(() => {});
+  }));
+  viewer.addEventListener('close', () => viewerVideo.pause());
   document.querySelectorAll('[data-view]').forEach((btn) => btn.addEventListener('click', () => {
+    showVideo(false);
     const img = btn.querySelector('img');
     viewerImg.src = btn.dataset.view || img.currentSrc || img.src;
     viewerImg.alt = img.alt;

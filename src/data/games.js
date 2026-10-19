@@ -2,7 +2,6 @@
 // /games/<slug>/ and makes it available to the homepage.
 import ttLogo from '../assets/toon-tactics/logo.webp';
 import ttCover from '../assets/toon-tactics/cover.webp';
-import ttGameplay from '../assets/toon-tactics/gameplay.webp';
 import ttSplash from '../assets/toon-tactics/splash.webp';
 import ttPipeline from '../assets/toon-tactics/pipeline.webp';
 
@@ -35,7 +34,8 @@ export const games = [
       alt: 'Toon Tactics cover art: a knight, archer, rogue, witch, skeleton mage and stone golem charge across a blocky castle battlefield',
     },
     gallery: [
-      { src: ttGameplay, alt: 'Gameplay: heroes face a dragon boss on a grass battle board surrounded by cherry blossoms', label: 'gameplay screenshot', depth: -0.06 },
+      // A gallery item can be a looping video instead of an image.
+      { video: { src: '/media/tt-gameplay.mp4', poster: '/media/tt-gameplay-poster.webp' }, alt: 'Gameplay: a squad of heroes battles the Ember Wyrm dragon boss on the board', label: 'gameplay video', depth: -0.06 },
       { src: ttSplash, alt: 'Splash art: a bear-hooded brawler, an orc with a stone hammer and a broom-riding witch charge across a castle battlefield', label: 'splash art', depth: 0.05 },
       { src: ttPipeline, alt: 'Character pipeline: a horned rogue modelled, UV-unwrapped and textured in Blender, then set up in Unity', label: 'character pipeline', depth: -0.03 },
     ],

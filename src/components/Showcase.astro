@@ -7,15 +7,19 @@ const { game } = Astro.props;
 
 // Larger versions for the full-screen viewer.
 const coverFull = await getImage({ src: game.cover.src, width: 1600, format: 'webp' });
-const galleryFull = await Promise.all(game.gallery.map((g: any) => getImage({ src: g.src, width: 1080, format: 'webp' })));
+const galleryFull = await Promise.all(game.gallery.map((g: any) => (g.src ? getImage({ src: g.src, width: 1080, format: 'webp' }) : null)));
 ---
 <div class="showcase" aria-label={`${game.name} media`}>
   <button class="shot cover" type="button" data-view={coverFull.src} aria-label={`View the ${game.name} cover art`}>
     <Image src={game.cover.src} alt={game.cover.alt} widths={[640, 960, 1280, 1536]} sizes="(max-width: 900px) 100vw, 1240px" loading="lazy" />
   </button>
   <div class="trio">
-    {game.gallery.map((g: any, i: number) => (
-      <button class="shot tall" type="button" data-view={galleryFull[i].src} data-depth={g.depth} aria-label={`View the ${g.label}`}>
+    {game.gallery.map((g: any, i: number) => g.video ? (
+      <button class="shot tall" type="button" data-view-video={g.video.src} data-depth={g.depth} aria-label={`Play the ${g.label}`}>
+        <video data-lazy-loop={g.video.src} poster={g.video.poster} muted loop playsinline preload="none" aria-label={g.alt}></video>
+      </button>
+    ) : (
+      <button class="shot tall" type="button" data-view={galleryFull[i]?.src} data-depth={g.depth} aria-label={`View the ${g.label}`}>
         <Image src={g.src} alt={g.alt} widths={[360, 540, 720]} sizes="(max-width: 900px) 74vw, 400px" loading="lazy" />
       </button>
     ))}
